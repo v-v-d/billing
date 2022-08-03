@@ -9,9 +9,6 @@ on:
 env:
   ENV_FILE: './.env.tests'
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  APM_ENABLED: '0'
-  POSTGRES_DB: 'test_notifications'
-  POSTGRES_HOST: 'test-db'
 
 jobs:
   build:
@@ -29,7 +26,7 @@ jobs:
       postgres:
         image: postgres:13
         env:
-          POSTGRES_DB: test_notifications
+          POSTGRES_DB: test_billing
           POSTGRES_PASSWORD: passwd
           POSTGRES_USER: postgres
         ports:
@@ -92,7 +89,6 @@ jobs:
     - name: Tests
       if: always()
       run: pytest -p no:warnings --cov-report=xml --cov=src/app src/tests
-#      run: docker-compose -f docker-compose.test.yml up --build --exit-code-from sut
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
@@ -112,18 +108,6 @@ jobs:
       run: |
         rm -rf ./lint-report
         flake8 ./src --per-file-ignores="__init__.py:F401" --inline-quotes '"' --format=html --htmldir=lint-report
-#
-#    - name: Update lint report
-#      if: always()
-#      run: |
-#        git config --global user.name 'v-v-d'
-#        git config --global user.email 'v-v-d@bk.ru'
-#        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-#        git fetch
-#        git checkout $GITHUB_HEAD_REF
-#        git add ./lint-report
-#        git commit -am "Lint report updated"
-#        git push
 
     - name: Static type checking
       if: always()
