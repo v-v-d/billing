@@ -5,7 +5,7 @@ from arq.connections import RedisSettings
 from app.integrations.auth import AuthHttpClient
 from app.redis import redis_settings
 from app.settings import settings
-from app.tasks.background.receipts import tasks
+from app.tasks.background.subscription import tasks
 from app.transports import AiohttpTransport
 
 
@@ -24,5 +24,5 @@ class WorkerSettings:
     redis_settings: RedisSettings = redis_settings
     on_startup = startup
     on_shutdown = shutdown
-    functions = [tasks.make_receipt]
+    functions = [tasks.grant_subscription]
     max_tries = settings.BACKGROUND.SUBSCRIPTION.MAX_TRIES
