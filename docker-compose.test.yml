@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   sut:
-    container_name: notifications-tests
+    container_name: billing-tests
     build:
       context: .
       target: tests
@@ -15,7 +15,7 @@ services:
     environment:
       - DEBUG=False
       - APM_ENABLED=False
-      - POSTGRES_DB=test_notifications
+      - POSTGRES_DB=test_billing
       - POSTGRES_HOST=test-db
 
   test-db:
