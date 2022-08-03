@@ -5,7 +5,6 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import ORJSONResponse
 from fastapi_pagination import add_pagination
 
-from app.amqp import publisher
 from app.api import init_api
 from app.apm import init_apm
 from app.sentry import init_sentry
@@ -27,12 +26,12 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.SECURITY.ALLOWE
 
 @app.on_event("startup")
 async def startup():
-    await publisher.connect()
+    pass
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    await publisher.disconnect()
+    pass
 
 
 init_api(app)
