@@ -201,5 +201,7 @@ class CommonSettings(BaseSettings):
     LOGS: LoggingSettings = LoggingSettings()
     AUTH_INTEGRATION: AuthIntegrationSettings = AuthIntegrationSettings()
     YOOKASSA_INTEGRATION: YookassaIntegrationSettings = YookassaIntegrationSettings()
-    NOTIFICATIONS_INTEGRATION: NotificationsIntegrationSettings = NotificationsIntegrationSettings()
+    NOTIFICATIONS_INTEGRATION: NotificationsIntegrationSettings = (
+        NotificationsIntegrationSettings()
+    )
     BACKGROUND: BackgroundTasksSettings = BackgroundTasksSettings()
