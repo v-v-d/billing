@@ -1,0 +1,7 @@
+async-asgi-testclient==1.4.9
+mimesis==5.5.0
+pytest==6.2.5
+pytest-asyncio==0.17.2
+pytest-cov==3.0.0
+pytest-freezegun==0.4.2
+pytest-mock==3.7.0

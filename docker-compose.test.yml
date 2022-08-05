@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  sut:
+    container_name: billing-tests
+    build:
+      context: .
+      target: tests
+    volumes:
+      - ./src:/code
+      - ./shared:/code/shared
+      - ./shared/logs:/code/shared/logs
+    env_file:
+      - .env.sample
+    environment:
+      - DEBUG=False
+      - APM_ENABLED=False
+      - POSTGRES_DB=test_billing
+      - POSTGRES_HOST=test-db
+
+  test-db:
+    image: postgres:13
+    container_name: test-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_DB=test_billing
+    expose:
+      - "5432"
