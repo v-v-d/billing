@@ -142,37 +142,25 @@ class LoggingSettings(BaseSettings):
 class AuthIntegrationSettings(BaseSettings):
     BASE_URL: AnyHttpUrl
     TIMEOUT_SEC: int = 10
-    USERS_PER_PAGE: int = 5
 
     class Config:
         env_prefix = "AUTH_INTEGRATION_"
 
 
-class AdminIntegrationSettings(BaseSettings):
+class NotificationsIntegrationSettings(BaseSettings):
     BASE_URL: AnyHttpUrl
     TIMEOUT_SEC: int = 10
-    USERS_PER_PAGE: int = 5
 
     class Config:
-        env_prefix = "ADMIN_INTEGRATION_"
+        env_prefix = "NOTIFICATIONS_INTEGRATION_"
 
 
-class BankIntegrationSettings(BaseSettings):
+class YookassaIntegrationSettings(BaseSettings):
     BASE_URL: AnyHttpUrl
     TIMEOUT_SEC: int = 10
-    USERS_PER_PAGE: int = 5
 
     class Config:
-        env_prefix = "BANK_INTEGRATION_"
-
-
-class FiscalIntegrationSettings(BaseSettings):
-    BASE_URL: AnyHttpUrl
-    TIMEOUT_SEC: int = 10
-    USERS_PER_PAGE: int = 5
-
-    class Config:
-        env_prefix = "FISCAL_INTEGRATION_"
+        env_prefix = "YOOKASSA_INTEGRATION_"
 
 
 class BackgroundTasksSettings(BaseSettings):
@@ -212,7 +200,6 @@ class CommonSettings(BaseSettings):
     DB: DatabaseSettings = DatabaseSettings()
     LOGS: LoggingSettings = LoggingSettings()
     AUTH_INTEGRATION: AuthIntegrationSettings = AuthIntegrationSettings()
-    ADMIN_INTEGRATION: AdminIntegrationSettings = AdminIntegrationSettings()
-    BANK_INTEGRATION: BankIntegrationSettings = BankIntegrationSettings()
-    FISCAL_INTEGRATION: FiscalIntegrationSettings = FiscalIntegrationSettings()
+    YOOKASSA_INTEGRATION: YookassaIntegrationSettings = YookassaIntegrationSettings()
+    NOTIFICATIONS_INTEGRATION: NotificationsIntegrationSettings = NotificationsIntegrationSettings()
     BACKGROUND: BackgroundTasksSettings = BackgroundTasksSettings()
