@@ -28,5 +28,11 @@ tests:
 migrate:
 	docker-compose up -d app && docker-compose exec app alembic revision --autogenerate -m "$(name)"
 
+upgrade:
+	docker-compose up -d app && docker-compose exec app alembic upgrade head
+
+downgrade:
+	docker-compose up -d app && docker-compose exec app alembic downgrade -1
+
 db-shell:
 	docker-compose up -d db && docker-compose exec db psql -U postgres -W billing
