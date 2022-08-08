@@ -23,9 +23,7 @@ class TimestampMixin:
 
 class Transaction(Base, TimestampMixin):
     __tablename__ = "transactions"
-    __table_args__ = (
-        sa.UniqueConstraint("id", "type", name="_id_type_uc"),
-    )
+    __table_args__ = (sa.UniqueConstraint("id", "type", name="_id_type_uc"),)
 
     class TypeEnum(enum.Enum):
         PAYMENT = "payment"
@@ -51,9 +49,13 @@ class Transaction(Base, TimestampMixin):
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ext_id = sa.Column(UUID(as_uuid=True), unique=True)
     user_id = sa.Column(UUID(as_uuid=True), nullable=False, index=True)
-    amount = sa.Column(sa.Numeric(14, 3), sa.CheckConstraint("amount>0"), nullable=False)
+    amount = sa.Column(
+        sa.Numeric(14, 3), sa.CheckConstraint("amount>0"), nullable=False
+    )
     type = sa.Column(sa.Enum(TypeEnum), nullable=False, index=True)
-    status = sa.Column(sa.Enum(StatusEnum), default=StatusEnum.CREATED.value, index=True)
+    status = sa.Column(
+        sa.Enum(StatusEnum), default=StatusEnum.CREATED.value, index=True
+    )
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
@@ -77,7 +79,9 @@ class Receipt(Base, TimestampMixin):
     transaction_id = sa.Column(
         UUID(as_uuid=True), sa.ForeignKey("transactions.id", ondelete="SET NULL")
     )
-    status = sa.Column(sa.Enum(StatusEnum), default=StatusEnum.CREATED.value, index=True)
+    status = sa.Column(
+        sa.Enum(StatusEnum), default=StatusEnum.CREATED.value, index=True
+    )
 
     transactions = relationship("Transaction", lazy="joined", back_populates="receipts")
     items = relationship("ReceiptItem", lazy="joined")
