@@ -23,6 +23,12 @@ class AbstractHttpClient(ABC):  # pragma: no cover
     def client_exc(self) -> Type[Exception]:
         pass
 
+    async def startup(self) -> None:
+        await self.http_transport.startup()
+
+    async def shutdown(self) -> None:
+        await self.http_transport.shutdown()
+
     async def request(self, *args, **kwargs) -> Any:
         try:
             return await self.http_transport.request(*args, **kwargs)
