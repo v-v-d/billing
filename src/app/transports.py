@@ -21,7 +21,9 @@ class AbstractHttpTransport(ABC):  # pragma: no cover
         pass
 
     @abstractmethod
-    async def shutdown(self, ) -> None:
+    async def shutdown(
+        self,
+    ) -> None:
         pass
 
     @abstractmethod
@@ -54,7 +56,6 @@ class AiohttpTransport(AbstractHttpTransport):
             json_serialize=lambda data: json.dumps(data, default=pydantic_encoder),
         )
 
-
     async def shutdown(self) -> None:
         if self.session:
             await self.session.close()
@@ -75,12 +76,11 @@ class AiohttpTransport(AbstractHttpTransport):
 
 
 class AiohttpTransportYooKassa(AiohttpTransport):
-
     async def startup(self) -> None:
         self.session = aiohttp.ClientSession(
             json_serialize=lambda data: json.dumps(data, default=pydantic_encoder),
             auth=aiohttp.BasicAuth(
                 settings.YOOKASSA_INTEGRATION.USER,
-                settings.YOOKASSA_INTEGRATION.PASSWORD
-            )
+                settings.YOOKASSA_INTEGRATION.PASSWORD,
+            ),
         )
