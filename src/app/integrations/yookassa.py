@@ -2,7 +2,7 @@ from pydantic import AnyHttpUrl
 
 from app.integrations.base import AbstractHttpClient
 from app.settings import settings
-from app.transports import AbstractHttpTransport, AiohttpTransport
+from app.transports import AbstractHttpTransport, AiohttpTransportYooKassa
 
 
 class YookassaHttpClientError(Exception):
@@ -17,4 +17,4 @@ class YookassaHttpClient(AbstractHttpClient):
         self.http_transport: AbstractHttpTransport = http_transport
 
 
-yookassa_client = YookassaHttpClient(AiohttpTransport())
+yookassa_client = YookassaHttpClient(AiohttpTransportYooKassa())
