@@ -158,6 +158,8 @@ class NotificationsIntegrationSettings(BaseSettings):
 class YookassaIntegrationSettings(BaseSettings):
     BASE_URL: AnyHttpUrl
     TIMEOUT_SEC: int = 10
+    AUTH_USER: str
+    AUTH_PASSWORD: str
 
     class Config:
         env_prefix = "YOOKASSA_INTEGRATION_"

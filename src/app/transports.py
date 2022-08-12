@@ -52,7 +52,7 @@ class AiohttpTransport(AbstractHttpTransport):
         self.session: Optional[aiohttp.ClientSession] = None
 
     async def startup(self) -> None:
-        self.session = ClientSession(
+        self.session = aiohttp.ClientSession(
             json_serialize=lambda data: json.dumps(data, default=pydantic_encoder),
         )
 
@@ -73,14 +73,3 @@ class AiohttpTransport(AbstractHttpTransport):
                 raise BaseTransportError(err.status, data)
 
             return data
-
-
-class AiohttpTransportYooKassa(AiohttpTransport):
-    async def startup(self) -> None:
-        self.session = aiohttp.ClientSession(
-            json_serialize=lambda data: json.dumps(data, default=pydantic_encoder),
-            auth=aiohttp.BasicAuth(
-                settings.YOOKASSA_INTEGRATION.USER,
-                settings.YOOKASSA_INTEGRATION.PASSWORD,
-            ),
-        )
