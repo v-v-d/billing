@@ -3,7 +3,7 @@ from pydantic import AnyHttpUrl, ValidationError, BaseModel, UUID4
 
 from app.integrations.base import AbstractHttpClient
 from app.settings import settings
-from app.transports import AbstractHttpTransport
+from app.transports import AbstractHttpTransport, AiohttpTransport
 
 
 class AuthHttpClientError(Exception):
@@ -32,3 +32,6 @@ class AuthHttpClient(AbstractHttpClient):
             return UserSchema(**response)
         except ValidationError as err:
             raise self.client_exc(err) from err
+
+
+auth_client = AuthHttpClient(AiohttpTransport())

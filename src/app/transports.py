@@ -21,7 +21,9 @@ class AbstractHttpTransport(ABC):  # pragma: no cover
         pass
 
     @abstractmethod
-    async def shutdown(self) -> None:
+    async def shutdown(
+        self,
+    ) -> None:
         pass
 
     @abstractmethod
