@@ -105,7 +105,7 @@ class UserFilms(Base, TimestampMixin):
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = sa.Column(UUID(as_uuid=True), nullable=False)
     film_id = sa.Column(UUID(as_uuid=True), nullable=False)
-    price = sa.Column(sa.Float, nullable=False, default=0)
+    price = sa.Column(sa.Integer, nullable=False)
     watched = sa.Column(sa.Boolean, default=False)
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
