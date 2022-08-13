@@ -99,8 +99,8 @@ class ReceiptItem(Base, TimestampMixin):
     amount = sa.Column(sa.Numeric(14, 3), nullable=False)
 
 
-class UserFilms(Base, TimestampMixin):
-    __tablename__ = "user_film"
+class UserFilm(Base, TimestampMixin):
+    __tablename__ = "users_films"
 
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = sa.Column(UUID(as_uuid=True), nullable=False)
