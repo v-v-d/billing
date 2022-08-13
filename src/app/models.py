@@ -97,3 +97,16 @@ class ReceiptItem(Base, TimestampMixin):
     description = sa.Column(sa.String(length=4096), nullable=False)
     quantity = sa.Column(sa.Numeric(14, 3), nullable=False)
     amount = sa.Column(sa.Numeric(14, 3), nullable=False)
+
+
+class UserFilms(Base, TimestampMixin):
+    __tablename__ = "user_film"
+
+    id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = sa.Column(UUID(as_uuid=True), nullable=False)
+    film_id = sa.Column(UUID(as_uuid=True), nullable=False)
+    price = sa.Column(sa.Integer, nullable=False)
+    watched = sa.Column(sa.Boolean, default=False)
+    is_active = sa.Column(sa.Boolean, default=True)
+
+    __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
