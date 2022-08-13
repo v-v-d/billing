@@ -97,3 +97,11 @@ class ReceiptItem(Base, TimestampMixin):
     description = sa.Column(sa.String(length=4096), nullable=False)
     quantity = sa.Column(sa.Numeric(14, 3), nullable=False)
     amount = sa.Column(sa.Numeric(14, 3), nullable=False)
+
+
+class Product(Base, TimestampMixin):
+    __tablename__ = "products"
+
+    id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = sa.Column(sa.String(length=1024), nullable=False)
+    price = sa.Column(sa.Numeric(14, 3), nullable=False)
