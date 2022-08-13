@@ -38,6 +38,7 @@ def upgrade() -> None:
         sa.Column("film_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("price", sa.Integer(), nullable=False),
         sa.Column("watched", sa.Boolean(), default=False),
+        sa.Column("is_active", sa.Boolean(), default=True),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id", "film_id", name="_user_film"),
         schema="content",
