@@ -90,6 +90,10 @@ class Receipt(Base, TimestampMixin):
 class ReceiptItem(Base, TimestampMixin):
     __tablename__ = "receipt_items"
 
+    class TypeEnum(enum.Enum):
+        FILM = "film"
+        SUBSCRIPTION = "subscription"
+
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     receipt_id = sa.Column(
         UUID(as_uuid=True), sa.ForeignKey("receipts.id", ondelete="SET NULL")
@@ -97,6 +101,7 @@ class ReceiptItem(Base, TimestampMixin):
     description = sa.Column(sa.String(length=4096), nullable=False)
     quantity = sa.Column(sa.Numeric(14, 3), nullable=False)
     amount = sa.Column(sa.Numeric(14, 3), nullable=False)
+    type = sa.Column(sa.Enum(TypeEnum), nullable=False)
 
 
 class UserFilm(Base, TimestampMixin):

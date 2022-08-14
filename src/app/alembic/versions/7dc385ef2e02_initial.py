@@ -39,7 +39,7 @@ def upgrade() -> None:
         sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("amount", sa.Numeric(precision=14, scale=3), nullable=False),
         sa.Column(
-            "type", sa.Enum("PAYMENT", "REFUND", name="typeenum"), nullable=False
+            "type", sa.Enum("PAYMENT", "REFUND", name="transactiontypeenum"), nullable=False
         ),
         sa.Column(
             "status",
@@ -50,13 +50,13 @@ def upgrade() -> None:
                 "WAITING_FOR_CAPTURE",
                 "SUCCEEDED",
                 "CANCELED",
-                name="statusenum",
+                name="transactionstatusenum",
             ),
             nullable=True,
         ),
         sa.Column(
             "payment_type",
-            sa.Enum("CARD", "APAY", "GPAY", "QR", name="paymenttype"),
+            sa.Enum("CARD", "APAY", "GPAY", "QR", name="transactionpaymenttype"),
             nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
@@ -121,7 +121,7 @@ def upgrade() -> None:
                 "PENDING",
                 "SUCCEEDED",
                 "CANCELED",
-                name="statusenum",
+                name="receiptstatusenum",
             ),
             nullable=True,
         ),
