@@ -3,10 +3,16 @@ import uuid
 from datetime import datetime
 
 import sqlalchemy as sa
+from pydantic import UUID4
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_mixin, relationship
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import Base
+
+
+class ObjectDoesNotExistError(Exception):
+    """Raise it if object does not exist in database."""
 
 
 @declarative_mixin
@@ -59,6 +65,26 @@ class Transaction(Base, TimestampMixin):
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
+
+
+    @classmethod
+    async def _get_obj(cls, db_session, stmt):
+        result = await db_session.execute(stmt)
+        obj = result.scalar()
+
+        if not obj:
+            raise ObjectDoesNotExistError
+        return obj
+
+    @classmethod
+    async def get_by_user_id(cls, db_session: AsyncSession, user_id: UUID4):
+        stmt = sa.select(Transaction).where(Transaction.user_id == user_id)
+        return await cls._get_obj(db_session, stmt)
+
+    @classmethod
+    async def get_by_id(cls, db_session: AsyncSession, transaction_id: UUID4):
+        stmt = sa.select(Transaction).where(Transaction.id == transaction_id)
+        return await cls._get_obj(db_session, stmt)
 
 
 class Receipt(Base, TimestampMixin):

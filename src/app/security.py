@@ -2,7 +2,7 @@ import secrets
 
 from fastapi.security import HTTPBasicCredentials
 from jose import JWTError, jwt
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, UUID4
 
 from app.settings import settings
 
@@ -16,6 +16,7 @@ class NotAuthenticatedError(BaseSecurityError):
 
 
 class TokenData(BaseModel):
+    user_id: UUID4
     roles: list[str]
 
 
