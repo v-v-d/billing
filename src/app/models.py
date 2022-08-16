@@ -7,6 +7,15 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_mixin, relationship
 
 from app.database import Base
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+class ObjectDoesNotExistError(Exception):
+    """Raise it if object does not exist in database."""
+
+
+class ObjectAlreadyExistError(Exception):
+    """Raise it if object already exist in database."""
 
 
 @declarative_mixin
@@ -59,6 +68,38 @@ class Transaction(Base, TimestampMixin):
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
+
+
+    @classmethod
+    async def _get_obj(cls, db_session, stmt: sa.sql.Select) -> "Transaction":
+        result = await db_session.execute(stmt)
+        obj = result.scalar()
+        if not obj:
+            raise ObjectDoesNotExistError
+        return obj
+
+    @classmethod
+    async def create(
+            cls,
+            db_session: AsyncSession,
+            ext_id: str, user_id: str, amount: int, payment_type: str = 'card'
+
+    ) -> "Transaction":
+        transaction = Transaction(
+            ext_id=ext_id,
+            user_id=user_id,
+            amount=amount,
+            payment_type=payment_type
+        )
+
+        db_session.add(transaction)
+        try:
+            await db_session.commit()
+        except sa.exc.IntegrityError:
+            raise ObjectAlreadyExistError
+        await db_session.refresh(transaction)
+
+        return transaction
 
 
 class Receipt(Base, TimestampMixin):
