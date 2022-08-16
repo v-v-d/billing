@@ -12,5 +12,7 @@ public_api = APIRouter(
     dependencies=[Depends(decode_jwt)],
 )
 
+public_api.include_router(v1.films.router, prefix="/v1/films")
 public_api.include_router(v1.receipts.router, prefix="/v1/receipts")
 public_api.include_router(v1.transactions.router, prefix="/v1/transactions")
+
