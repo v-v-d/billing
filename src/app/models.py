@@ -3,10 +3,17 @@ import uuid
 from datetime import datetime
 
 import sqlalchemy as sa
+from pydantic import UUID4
+from sqlalchemy import and_
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import declarative_mixin, relationship
 
 from app.database import Base
+
+
+class ObjectDoesNotExistError(Exception):
+    """Raise it if object does not exist in database."""
 
 
 @declarative_mixin
@@ -115,3 +122,22 @@ class UserFilm(Base, TimestampMixin):
     is_active = sa.Column(sa.Boolean, default=True)
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
+
+    @classmethod
+    async def update(
+        cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
+    ):
+        stmt = sa.select(UserFilm).where(
+            and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
+        )
+        result = await session.execute(stmt)
+        user_film = result.scalar()
+
+        if not user_film:
+            raise ObjectDoesNotExistError
+
+        for key, value in kwargs.items():
+            if key not in ("user_id", "film_id"):
+                setattr(user_film, key, value)
+
+        return user_film
