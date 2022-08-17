@@ -15,7 +15,7 @@ router = APIRouter()
     description="Marks the film as watched",
 )
 async def mark_as_watched(
-        user_id: UUID4, film_id: UUID4, db_session: AsyncSession = Depends(get_db)
+    user_id: UUID4, film_id: UUID4, db_session: AsyncSession = Depends(get_db)
 ):
     try:
         await UserFilm.update(
