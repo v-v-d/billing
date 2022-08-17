@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from pydantic import UUID4
 
-from models import UserFilm
+from models import UserFilm, ObjectDoesNotExistError
 
 router = APIRouter()
 
