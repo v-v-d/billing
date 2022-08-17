@@ -51,7 +51,7 @@ async def test_ok(client, user_film, user_id, film_id, price) -> None:
         "film_id": film_id,
         "price": price,
         "is_active": True,
-        "watched": True
+        "watched": True,
     }
     assert response.json() == expected
 

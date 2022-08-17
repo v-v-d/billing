@@ -27,7 +27,8 @@ async def mark_as_watched(
         )
     except ObjectDoesNotExistError:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Film not found for user specified"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Film not found for user specified",
         )
 
     return UserFilmOutputSchema.from_orm(user_film)
