@@ -4,9 +4,13 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_mixin, relationship
+from sqlalchemy.orm import declarative_mixin, relationship, and_
 
 from app.database import Base
+
+
+class ObjectDoesNotExistError(Exception):
+    """Raise it if object does not exist in database."""
 
 
 @declarative_mixin
@@ -115,3 +119,22 @@ class UserFilm(Base, TimestampMixin):
     is_active = sa.Column(sa.Boolean, default=True)
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
+
+    @classmethod
+    async def mark_as_watched(cls,
+                              session: AsyncSession,
+                              user_id: UUID4,
+                              film_id: UUID4):
+        stmt = (
+            sa.select(UserFilm)
+            .where(and_(UserFilm.user_id == user_id,
+                        UserFilm.film_id == film_id))
+        )
+        result = await session.execute(stmt)
+        obj = result.scalar()
+
+        if not obj:
+            raise ObjectDoesNotExistError
+
+        obj.watched = True
+        await session.commit()
