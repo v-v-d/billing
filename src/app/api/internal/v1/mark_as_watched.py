@@ -1,7 +1,11 @@
-from fastapi import APIRouter
-from pydantic import UUID4
+from http import HTTPStatus
 
-from models import UserFilm, ObjectDoesNotExistError
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import UUID4
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.dependencies.database import get_db
+from app.models import UserFilm, ObjectDoesNotExistError
 
 router = APIRouter()
 
@@ -11,11 +15,11 @@ router = APIRouter()
     description="Marks the film as watched",
 )
 async def mark_as_watched(
-    user_id: UUID4, film_id: UUID4, db_session: AsyncSession = Depends(get_db)
+        user_id: UUID4, film_id: UUID4, db_session: AsyncSession = Depends(get_db)
 ):
     try:
-        await UserFilm.mark_as_watched(
-            session=db_session, user_id=user_id, film_id=film_id
+        await UserFilm.update(
+            session=db_session, user_id=user_id, film_id=film_id, watched=True
         )
     except ObjectDoesNotExistError:
         raise HTTPException(

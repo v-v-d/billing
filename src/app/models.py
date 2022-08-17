@@ -3,8 +3,11 @@ import uuid
 from datetime import datetime
 
 import sqlalchemy as sa
+from pydantic import UUID4
+from sqlalchemy import and_
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_mixin, relationship, and_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import declarative_mixin, relationship
 
 from app.database import Base
 
@@ -120,18 +123,20 @@ class UserFilm(Base, TimestampMixin):
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
 
-    @classmethod
-    async def mark_as_watched(
-        cls, session: AsyncSession, user_id: UUID4, film_id: UUID4
+    async def update(
+            cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
     ):
         stmt = sa.select(UserFilm).where(
             and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
         )
         result = await session.execute(stmt)
-        obj = result.scalar()
+        user_film = result.scalar()
 
-        if not obj:
+        if not user_film:
             raise ObjectDoesNotExistError
 
-        obj.watched = True
-        await session.commit()
+        for key, value in kwargs.items():
+            if key not in ("user_id", "film_id"):
+                setattr(user_film, key, value)
+
+        return user_film
