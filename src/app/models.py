@@ -123,6 +123,7 @@ class UserFilm(Base, TimestampMixin):
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
 
+    @classmethod
     async def update(
             cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
     ):
