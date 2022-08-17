@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter
 from pydantic import UUID4
 
@@ -7,7 +6,10 @@ from models import UserFilm, ObjectDoesNotExistError
 router = APIRouter()
 
 
-@router.put("/users/{user_id}/films/{film_id}/mark-as-watched", description="Marks the film as watched")
+@router.put(
+    "/users/{user_id}/films/{film_id}/mark-as-watched",
+    description="Marks the film as watched",
+)
 async def mark_as_watched(
     user_id: UUID4, film_id: UUID4, db_session: AsyncSession = Depends(get_db)
 ):
