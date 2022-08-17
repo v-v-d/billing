@@ -4,8 +4,8 @@ from pydantic import UUID4
 router = APIRouter()
 
 
-@router.put("/users/{user_id}/films/{film_id}", description="Marks the film as watched")
-async def get_transaction_by_id(
+@router.put("/users/{user_id}/films/{film_id/mark_as_watched", description="Marks the film as watched")
+async def mark_as_watched(
     user_id: UUID4, film_id: UUID4, db_session: AsyncSession = Depends(get_db)
 ):
     try:
