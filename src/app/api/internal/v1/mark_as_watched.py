@@ -1,5 +1,8 @@
+
 from fastapi import APIRouter
 from pydantic import UUID4
+
+from models import UserFilm
 
 router = APIRouter()
 
