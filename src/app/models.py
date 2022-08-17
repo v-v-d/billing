@@ -121,14 +121,11 @@ class UserFilm(Base, TimestampMixin):
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
 
     @classmethod
-    async def mark_as_watched(cls,
-                              session: AsyncSession,
-                              user_id: UUID4,
-                              film_id: UUID4):
-        stmt = (
-            sa.select(UserFilm)
-            .where(and_(UserFilm.user_id == user_id,
-                        UserFilm.film_id == film_id))
+    async def mark_as_watched(
+        cls, session: AsyncSession, user_id: UUID4, film_id: UUID4
+    ):
+        stmt = sa.select(UserFilm).where(
+            and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
         )
         result = await session.execute(stmt)
         obj = result.scalar()
