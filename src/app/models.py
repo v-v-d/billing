@@ -10,6 +10,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import declarative_mixin, relationship
 
 from app.database import Base
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+class ObjectDoesNotExistError(Exception):
+    """Raise it if object does not exist in database."""
+
+
+class ObjectAlreadyExistError(Exception):
+    """Raise it if object already exist in database."""
 
 
 class ObjectDoesNotExistError(Exception):
@@ -67,6 +76,36 @@ class Transaction(Base, TimestampMixin):
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
 
+    @classmethod
+    async def _get_obj(cls, db_session, stmt: sa.sql.Select) -> "Transaction":
+        result = await db_session.execute(stmt)
+        obj = result.scalar()
+        if not obj:
+            raise ObjectDoesNotExistError
+        return obj
+
+    @classmethod
+    async def create(
+        cls,
+        db_session: AsyncSession,
+        ext_id: str,
+        user_id: str,
+        amount: int,
+        payment_type: str = "card",
+    ) -> "Transaction":
+        transaction = Transaction(
+            ext_id=ext_id, user_id=user_id, amount=amount, payment_type=payment_type
+        )
+
+        db_session.add(transaction)
+        try:
+            await db_session.commit()
+        except sa.exc.IntegrityError:
+            raise ObjectAlreadyExistError
+        await db_session.refresh(transaction)
+
+        return transaction
+
 
 class Receipt(Base, TimestampMixin):
     __tablename__ = "receipts"
@@ -122,6 +161,19 @@ class UserFilm(Base, TimestampMixin):
     is_active = sa.Column(sa.Boolean, default=True)
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
+
+    @classmethod
+    async def get_by_user_id_and_film_id(
+        cls, session: AsyncSession, user_id: UUID4, film_id: UUID4
+    ):
+        stmt = sa.select(UserFilm).where(
+            and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
+        )
+        result = await session.execute(stmt)
+        user_film = result.scalar()
+        if not user_film:
+            raise ObjectDoesNotExistError
+        return user_film
 
     @classmethod
     async def update(

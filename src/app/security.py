@@ -2,9 +2,10 @@ import secrets
 
 from fastapi.security import HTTPBasicCredentials
 from jose import JWTError, jwt
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, Field
 
 from app.settings import settings
+from uuid import UUID
 
 
 class BaseSecurityError(Exception):
@@ -42,5 +43,21 @@ def decode_jwt_token(token: str) -> TokenData:
 
     try:
         return TokenData(**decoded_token)
+    except ValidationError:
+        raise NotAuthenticatedError
+
+
+def get_id_user_from_token(token: str):
+    try:
+        decoded_token = jwt.decode(
+            token,
+            settings.SECURITY.JWT_AUTH.SECRET_KEY,
+            algorithms=[settings.SECURITY.JWT_AUTH.ALGORITHM],
+        )
+    except JWTError:
+        raise NotAuthenticatedError
+
+    try:
+        return decoded_token["sub"]
     except ValidationError:
         raise NotAuthenticatedError
