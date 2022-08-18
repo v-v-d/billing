@@ -76,7 +76,6 @@ class Transaction(Base, TimestampMixin):
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
 
-
     @classmethod
     async def _get_obj(cls, db_session, stmt: sa.sql.Select) -> "Transaction":
         result = await db_session.execute(stmt)
@@ -87,16 +86,15 @@ class Transaction(Base, TimestampMixin):
 
     @classmethod
     async def create(
-            cls,
-            db_session: AsyncSession,
-            ext_id: str, user_id: str, amount: int, payment_type: str = 'card'
-
+        cls,
+        db_session: AsyncSession,
+        ext_id: str,
+        user_id: str,
+        amount: int,
+        payment_type: str = "card",
     ) -> "Transaction":
         transaction = Transaction(
-            ext_id=ext_id,
-            user_id=user_id,
-            amount=amount,
-            payment_type=payment_type
+            ext_id=ext_id, user_id=user_id, amount=amount, payment_type=payment_type
         )
 
         db_session.add(transaction)
@@ -176,7 +174,6 @@ class UserFilm(Base, TimestampMixin):
         if not user_film:
             raise ObjectDoesNotExistError
         return user_film
-
 
     @classmethod
     async def update(

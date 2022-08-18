@@ -7,6 +7,7 @@ from pydantic import BaseModel, ValidationError, Field
 from app.settings import settings
 from uuid import UUID
 
+
 class BaseSecurityError(Exception):
     pass
 
@@ -57,7 +58,6 @@ def get_id_user_from_token(token: str):
         raise NotAuthenticatedError
 
     try:
-        return decoded_token['sub']
+        return decoded_token["sub"]
     except ValidationError:
         raise NotAuthenticatedError
-

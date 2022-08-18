@@ -56,4 +56,3 @@ async def check_purchase(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Film not found for user specified",
         )
-

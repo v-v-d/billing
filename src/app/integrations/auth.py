@@ -6,6 +6,7 @@ from app.settings import settings
 from app.transports import AbstractHttpTransport, AiohttpTransport
 from typing import Optional
 
+
 class AuthHttpClientError(Exception):
     pass
 
@@ -24,7 +25,12 @@ class AuthHttpClient(AbstractHttpClient):
         self.http_transport: AbstractHttpTransport = http_transport
 
     async def get_user_details(self, user_id: UUID4) -> UserSchema:
-        url = furl(self.base_url).add(path="/api/internal/v1/users").add(path=user_id).add(path='info')
+        url = (
+            furl(self.base_url)
+            .add(path="/api/internal/v1/users")
+            .add(path=user_id)
+            .add(path="info")
+        )
         response = await self.request(
             method="GET", url=url.url, timeout=settings.AUTH_INTEGRATION.TIMEOUT_SEC
         )

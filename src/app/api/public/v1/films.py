@@ -17,30 +17,24 @@ router = APIRouter()
 class Order(BaseModel):
     film_id: UUID
 
+
 class ObjectAlreadyExistError(Exception):
     """Raise it if object already exist in database."""
 
 
 @router.post("/{film_id}/purchase")
 async def root(
-        film_id: str,
-        request: Request,
-        db_session: AsyncSession = Depends(get_db)
+    film_id: str, request: Request, db_session: AsyncSession = Depends(get_db)
 ):
-    token = request.headers.get('Authorization').removeprefix('Bearer ')
+    token = request.headers.get("Authorization").removeprefix("Bearer ")
 
     # TODO НЕ РАБОТАЕТ ручка в Auth /users/info (где по токену получаем юзера) или я что-то не так делаю
     # пока так посмотрите пожалуйста
     user_id = get_id_user_from_token(token)
     user = await auth_client.get_user_details(user_id)
 
-    stmt = (
-        sa.select(UserFilm).where(
-            sa.and_(
-                UserFilm.film_id == film_id,
-                UserFilm.user_id == user_id
-            )
-        )
+    stmt = sa.select(UserFilm).where(
+        sa.and_(UserFilm.film_id == film_id, UserFilm.user_id == user_id)
     )
     result = await db_session.execute(stmt)
     user_film_info = result.scalar()
