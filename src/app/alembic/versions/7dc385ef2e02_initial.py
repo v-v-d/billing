@@ -39,7 +39,9 @@ def upgrade() -> None:
         sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("amount", sa.Numeric(precision=14, scale=3), nullable=False),
         sa.Column(
-            "type", sa.Enum("PAYMENT", "REFUND", name="transactiontypeenum"), nullable=False
+            "type",
+            sa.Enum("PAYMENT", "REFUND", name="transactiontypeenum"),
+            nullable=False,
         ),
         sa.Column(
             "status",
