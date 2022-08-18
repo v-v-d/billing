@@ -165,6 +165,20 @@ class UserFilm(Base, TimestampMixin):
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
 
     @classmethod
+    async def get_by_user_id_and_film_id(
+        cls, session: AsyncSession, user_id: UUID4, film_id: UUID4
+    ):
+        stmt = sa.select(UserFilm).where(
+            and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
+        )
+        result = await session.execute(stmt)
+        user_film = result.scalar()
+        if not user_film:
+            raise ObjectDoesNotExistError
+        return user_film
+
+
+    @classmethod
     async def update(
         cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
     ):
