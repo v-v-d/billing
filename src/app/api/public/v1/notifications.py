@@ -11,9 +11,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/yookassa/on-after-payment",
-    description="Callback from yookassa",
-    status_code=200
+    "/yookassa/on-after-payment", description="Callback from yookassa", status_code=200
 )
 async def mark_as_watched(request: Request, db_session: AsyncSession = Depends(get_db)):
     message_body = await request.json()
@@ -32,4 +30,3 @@ async def mark_as_watched(request: Request, db_session: AsyncSession = Depends(g
             raise HTTPException(
                 status_code=HTTPStatus.NOT_FOUND, detail="transaction not found"
             )
-

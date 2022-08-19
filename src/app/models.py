@@ -145,7 +145,7 @@ class UserFilm(Base, TimestampMixin):
 
     @classmethod
     async def update_by_transaction(
-            cls, session: AsyncSession, transaction_id: UUID4,  **kwargs
+        cls, session: AsyncSession, transaction_id: UUID4, **kwargs
     ):
         stmt = sa.select(UserFilm).where(UserFilm.transaction_id == transaction_id)
         result = await session.execute(stmt)
