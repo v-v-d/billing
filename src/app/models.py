@@ -117,6 +117,7 @@ class UserFilm(Base, TimestampMixin):
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = sa.Column(UUID(as_uuid=True), nullable=False)
     film_id = sa.Column(UUID(as_uuid=True), nullable=False)
+    transaction_id = sa.Column(UUID(as_uuid=True), nullable=True)
     price = sa.Column(sa.Integer, nullable=False)
     watched = sa.Column(sa.Boolean, default=False)
     is_active = sa.Column(sa.Boolean, default=True)
@@ -138,6 +139,23 @@ class UserFilm(Base, TimestampMixin):
 
         for key, value in kwargs.items():
             if key not in ("user_id", "film_id"):
+                setattr(user_film, key, value)
+
+        return user_film
+
+    @classmethod
+    async def update_by_transaction(
+            cls, session: AsyncSession, transaction_id: UUID4,  **kwargs
+    ):
+        stmt = sa.select(UserFilm).where(UserFilm.transaction_id == transaction_id)
+        result = await session.execute(stmt)
+        user_film = result.scalar()
+
+        if not user_film:
+            raise ObjectDoesNotExistError
+
+        for key, value in kwargs.items():
+            if key not in ("user_id", "film_id", "transaction_id"):
                 setattr(user_film, key, value)
 
         return user_film
