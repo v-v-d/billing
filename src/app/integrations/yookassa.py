@@ -2,7 +2,8 @@ import json
 from typing import Any
 
 import aiohttp
-from pydantic import AnyHttpUrl
+from furl import furl
+from pydantic import AnyHttpUrl, ValidationError
 
 from app.api.public.v1.schemas import PaymentObjectSchema
 from app.integrations.base import AbstractHttpClient
