@@ -17,9 +17,9 @@ async def on_after_payment(
     payment_data: PaymentNotificationSchema, db_session: AsyncSession = Depends(get_db)
 ):
     transaction_id = payment_data.object.id
-    transaction_status = yookassa_client.check_transaction(transaction_id)
+    transaction_data = yookassa_client.check_transaction(transaction_id)
 
-    if TransactionStatusEnum.SUCCEEDED in transaction_status:
+    if transaction_data.status == TransactionStatusEnum.SUCCEEDED  :
         try:
             transaction = await Transaction.get_by_id(
                 db_session=db_session, transaction_id=transaction_id

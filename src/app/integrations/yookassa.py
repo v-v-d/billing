@@ -4,6 +4,7 @@ from typing import Any
 import aiohttp
 from pydantic import AnyHttpUrl
 
+from app.api.public.v1.schemas import PaymentObjectSchema
 from app.integrations.base import AbstractHttpClient
 from app.settings import settings
 from app.transports import AbstractHttpTransport, AiohttpTransport
@@ -32,18 +33,18 @@ class YookassaHttpClient(AbstractHttpClient):
     async def pay(self, *args, **kwargs) -> None:
         await self._request(*args, **kwargs, auth=self.auth)
 
-    async def check_transaction(self, transaction_id: str) -> str:
+    async def get_transaction(self, transaction_id: str) -> PaymentObjectSchema:
         """
-        Checks transaction status in yookassa by GET request on URL:
+        Gets transaction info from  yookassa by GET request to URL:
         https://api.yookassa.ru/v3/payments/{payment_id}
         """
-        check_transaction_url = "{}/payments/{}".format(self.base_url, transaction_id)
-        result = await self._request(
-            method="GET", url=check_transaction_url, auth=self.auth
-        )
+        url = furl(self.base_url).add(path="/payments").add(path=transaction_id)
+        result = await self._request(method="GET", url=url.url, auth=self.auth)
 
-        result_json = json.loads(result)
-        return result_json.get("status", "")
+        try:
+            return PaymentObjectSchema(**result)
+        except ValidationError as err:
+            raise self.client_exc(str(err)) from err
 
 
 yookassa_client = YookassaHttpClient(AiohttpTransport())
