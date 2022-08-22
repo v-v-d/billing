@@ -32,3 +32,27 @@ async def mark_as_watched(
         )
 
     return UserFilmOutputSchema.from_orm(user_film)
+
+
+@router.get(
+    "/users/{user_id}/films/{film_id}",
+    response_model=UserFilmOutputSchema,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"model": ErrorSchema},
+    },
+    description="Retrieve user film.",
+)
+async def retrieve(
+    user_id: UUID4, film_id: UUID4, db_session: AsyncSession = Depends(get_db)
+):
+    try:
+        user_film = await UserFilm.get(
+            session=db_session, user_id=user_id, film_id=film_id
+        )
+    except ObjectDoesNotExistError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User film not found.",
+        )
+
+    return UserFilmOutputSchema.from_orm(user_film)

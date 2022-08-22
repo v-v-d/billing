@@ -127,6 +127,16 @@ class UserFilm(Base, TimestampMixin):
     async def update(
         cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
     ):
+        user_film = await cls.get(session, user_id, film_id)
+
+        for key, value in kwargs.items():
+            if key not in ("user_id", "film_id"):
+                setattr(user_film, key, value)
+
+        return user_film
+
+    @classmethod
+    async def get(cls, session: AsyncSession, user_id: UUID4, film_id: UUID4):
         stmt = sa.select(UserFilm).where(
             and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
         )
@@ -135,9 +145,5 @@ class UserFilm(Base, TimestampMixin):
 
         if not user_film:
             raise ObjectDoesNotExistError
-
-        for key, value in kwargs.items():
-            if key not in ("user_id", "film_id"):
-                setattr(user_film, key, value)
 
         return user_film
