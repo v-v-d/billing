@@ -37,7 +37,9 @@ class PaymentsService:
         idempotence_key: UUID4,
     ) -> str:
         user_film, _ = await UserFilm.get_or_create(
-            db_session, user_id=user_id, film_id=film_id,
+            db_session,
+            user_id=user_id,
+            film_id=film_id,
         )
 
         if user_film.is_active:
@@ -58,7 +60,9 @@ class PaymentsService:
             type=Transaction.TypeEnum.PAYMENT,
             payment_type=payment_type,
         )
-        transaction_id = transaction.id  # prevent sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
+        transaction_id = (
+            transaction.id
+        )  # prevent sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
 
         receipt = await Receipt.create(db_session, transaction_id=transaction.id)
         await ReceiptItem.create(

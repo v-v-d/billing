@@ -57,7 +57,9 @@ class MethodsExtensionMixin:
         return obj
 
     @classmethod
-    async def get_or_create(cls, session: AsyncSession, defaults: Optional[dict[str, Any]] = None, **kwargs):
+    async def get_or_create(
+        cls, session: AsyncSession, defaults: Optional[dict[str, Any]] = None, **kwargs
+    ):
         """
         Gets object for given kwargs, if not found create it with additional kwargs
         from defaults dict.

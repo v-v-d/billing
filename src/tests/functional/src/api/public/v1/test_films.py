@@ -136,7 +136,7 @@ def failed_yookassa(mocker: MockerFixture) -> MagicMock:
     )
 
 
-@pytest.mark.parametrize("mocked_async_api", (30000, ), indirect=True)
+@pytest.mark.parametrize("mocked_async_api", (30000,), indirect=True)
 async def test_ok(
     db_session,
     client: TestClient,
@@ -194,7 +194,7 @@ async def test_ok(
     assert not user_film.watched
 
 
-@pytest.mark.parametrize("mocked_async_api", (30000, ), indirect=True)
+@pytest.mark.parametrize("mocked_async_api", (30000,), indirect=True)
 async def test_already_purchased(
     client: TestClient,
     headers: dict[str, Any],
@@ -268,7 +268,7 @@ async def test_failed_async_api(
     mocked_yookassa.assert_not_called()
 
 
-@pytest.mark.parametrize("mocked_async_api", (30000, ), indirect=True)
+@pytest.mark.parametrize("mocked_async_api", (30000,), indirect=True)
 async def test_failed_yookassa(
     client: TestClient,
     headers: dict[str, Any],

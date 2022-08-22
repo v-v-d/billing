@@ -23,10 +23,12 @@ class AsyncAPIHttpClient(AbstractHttpClient):
         self.http_transport: AbstractHttpTransport = http_transport
 
     async def get_film_details(self, film_id: str) -> FilmSchema:
-        url = furl(self.base_url).add(path="/api/v1/films").add(path= film_id)
+        url = furl(self.base_url).add(path="/api/v1/films").add(path=film_id)
 
         response = await self.request(
-            method="GET", url=url.url, timeout=settings.ASYNC_API_INTEGRATION.TIMEOUT_SEC
+            method="GET",
+            url=url.url,
+            timeout=settings.ASYNC_API_INTEGRATION.TIMEOUT_SEC,
         )
 
         try:
