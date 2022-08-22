@@ -17,7 +17,13 @@ async def on_after_payment(
     payment_data: PaymentNotificationSchema, db_session: AsyncSession = Depends(get_db)
 ):
     transaction_id = payment_data.object.id
-    transaction_data = yookassa_client.get_transaction(transaction_id)
+try:
+    transaction_data = await yookassa_client.get_transaction(transaction_id)
+except YookassaHttpClientError:
+    raise HTTPException(
+            status_code=status.HTTP_424_FAILED_DEPENDENCY,
+            detail="Yookassa unavailable.",
+        )
 
     if transaction_data.status == TransactionStatusEnum.SUCCEEDED:
         try:
