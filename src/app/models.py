@@ -16,13 +16,6 @@ class ObjectDoesNotExistError(Exception):
     """Raise it if object does not exist in database."""
 
 
-class TransactionStatusEnum(enum.Enum):
-    SUCCEEDED = "succeeded"
-    PENDING = "pending"
-    WAITING_FOR_CAPTURE = "waiting_for_capture"
-    CANCELED = "canceled"
-
-
 @declarative_mixin
 class TimestampMixin:
     created_at = sa.Column(
