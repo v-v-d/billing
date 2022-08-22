@@ -1,32 +1,35 @@
-from http import HTTPStatus
+import logging
+import json
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import UUID4
+import aiohttp
+from aiohttp import ClientConnectionError
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.database import get_db
-from app.models import UserFilm, ObjectDoesNotExistError
+from app.api.public.v1.schemas import PaymentNotificationSchema
+from app.database import session_scope
+from app.integrations.yookassa import yookassa_client
+from app.models import UserFilm, ObjectDoesNotExistError, TransactionStatusEnum, Transaction
+from app.settings import settings
 
 router = APIRouter()
+logger = logging.getLogger("notification")
 
 
 @router.post(
-    "/yookassa/on-after-payment", description="Callback from yookassa", status_code=200
+    "/yookassa/on-after-payment", description="Callback from yookassa"
 )
-async def mark_as_watched(request: Request, db_session: AsyncSession = Depends(get_db)):
-    message_body = await request.json()
-    transaction_id = message_body.get("object", {}).get("id")
-    transaction_status = message_body.get("object", {}).get("status")
+async def on_after_payment(payment_data: PaymentNotificationSchema,
+                           db_session: AsyncSession = Depends(get_db)):
 
-    if not transaction_id or not transaction_status:
-        return  # received notification is not about transaction status
+    transaction_id = payment_data.object.id
+    transaction_status = yookassa_client.check_transaction(transaction_id)
 
-    if "success" in transaction_status:
+    if TransactionStatusEnum.SUCCEEDED in transaction_status:
         try:
-            await UserFilm.update_by_transaction(
-                session=db_session, transaction_id=transaction_id, is_active=True
-            )
+            transaction = await Transaction.get_by_id(db_session=db_session,
+                                                      transaction_id=transaction_id)
+            transaction.user_film.is_active = True
         except ObjectDoesNotExistError:
-            raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail="transaction not found"
-            )
+            logger.exception("Unknown transaction `id` received: %s", transaction_id)

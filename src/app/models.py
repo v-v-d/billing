@@ -4,7 +4,7 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from pydantic import UUID4
-from sqlalchemy import and_
+from sqlalchemy import and_, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import declarative_mixin, relationship
@@ -14,6 +14,13 @@ from app.database import Base
 
 class ObjectDoesNotExistError(Exception):
     """Raise it if object does not exist in database."""
+
+
+class TransactionStatusEnum(enum.Enum):
+    SUCCEEDED = "succeeded"
+    PENDING = "pending"
+    WAITING_FOR_CAPTURE = "waiting_for_capture"
+    CANCELED = "canceled"
 
 
 @declarative_mixin
@@ -66,6 +73,24 @@ class Transaction(Base, TimestampMixin):
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
+    user_film = relationship("UserFilm", back_populates="transactions", uselist=False)
+
+    @classmethod
+    async def _get_obj(cls, db_session, stmt: sa.sql.Select) -> "Transaction":
+        result = await db_session.execute(stmt)
+        obj = result.scalar()
+
+        if not obj:
+            raise ObjectDoesNotExistError
+
+        return obj
+
+    @classmethod
+    async def get_by_id(
+            cls, db_session: AsyncSession, transaction_id: UUID4
+    ) -> "Transaction":
+        stmt = sa.select(Transaction).where(Transaction.id == transaction_id)
+        return await cls._get_obj(db_session, stmt)
 
 
 class Receipt(Base, TimestampMixin):
@@ -117,16 +142,17 @@ class UserFilm(Base, TimestampMixin):
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = sa.Column(UUID(as_uuid=True), nullable=False)
     film_id = sa.Column(UUID(as_uuid=True), nullable=False)
-    transaction_id = sa.Column(UUID(as_uuid=True), nullable=True)
+    transaction_id = sa.Column(UUID(as_uuid=True), ForeignKey("transactions.id"))
     price = sa.Column(sa.Integer, nullable=False)
     watched = sa.Column(sa.Boolean, default=False)
     is_active = sa.Column(sa.Boolean, default=True)
+    transaction = relationship("Transaction", back_populates="user_film")
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
 
     @classmethod
     async def update(
-        cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
+            cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
     ):
         stmt = sa.select(UserFilm).where(
             and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
@@ -139,23 +165,6 @@ class UserFilm(Base, TimestampMixin):
 
         for key, value in kwargs.items():
             if key not in ("user_id", "film_id"):
-                setattr(user_film, key, value)
-
-        return user_film
-
-    @classmethod
-    async def update_by_transaction(
-        cls, session: AsyncSession, transaction_id: UUID4, **kwargs
-    ):
-        stmt = sa.select(UserFilm).where(UserFilm.transaction_id == transaction_id)
-        result = await session.execute(stmt)
-        user_film = result.scalar()
-
-        if not user_film:
-            raise ObjectDoesNotExistError
-
-        for key, value in kwargs.items():
-            if key not in ("user_id", "film_id", "transaction_id"):
                 setattr(user_film, key, value)
 
         return user_film

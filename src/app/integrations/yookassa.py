@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 import aiohttp
@@ -30,6 +31,22 @@ class YookassaHttpClient(AbstractHttpClient):
 
     async def pay(self, *args, **kwargs) -> None:
         await self._request(*args, **kwargs, auth=self.auth)
+
+    async def check_transaction(self, transaction_id: str) -> str:
+        """
+        Checks transaction status in yookassa by GET request on URL:
+        https://api.yookassa.ru/v3/payments/{payment_id}
+        """
+        check_transaction_url = "{}/payments/{}".format(
+            self.base_url,
+            transaction_id
+        )
+        result = await self._request(method="GET",
+                                     url=check_transaction_url,
+                                     auth=self.auth)
+
+        result_json = json.loads(result)
+        return result_json.get("status", "")
 
 
 yookassa_client = YookassaHttpClient(AiohttpTransport())
