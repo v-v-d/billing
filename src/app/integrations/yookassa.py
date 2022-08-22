@@ -21,8 +21,8 @@ class YookassaHttpClient(AbstractHttpClient):
     auth: aiohttp.BasicAuth = (
         aiohttp.BasicAuth(
             settings.YOOKASSA_INTEGRATION.AUTH_USER,
-            settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD,
-        ),
+            settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD
+        )
     )
 
     def __init__(self, http_transport: AbstractHttpTransport) -> None:
@@ -39,8 +39,8 @@ class YookassaHttpClient(AbstractHttpClient):
         Gets transaction info from  yookassa by GET request to URL:
         https://api.yookassa.ru/v3/payments/{payment_id}
         """
-        url = furl(self.base_url).add(path="/payments").add(path=transaction_id)
-        result = await self._request(method="GET", url=url.url, auth=self.auth)
+        url = furl(self.base_url).add(path="/payments").add(path=str(transaction_id))
+        result = await self._request(method="GET", url=url.url)
 
         try:
             return PaymentObjectSchema(**result)
