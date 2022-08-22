@@ -37,13 +37,10 @@ class YookassaHttpClient(AbstractHttpClient):
         Checks transaction status in yookassa by GET request on URL:
         https://api.yookassa.ru/v3/payments/{payment_id}
         """
-        check_transaction_url = "{}/payments/{}".format(
-            self.base_url,
-            transaction_id
+        check_transaction_url = "{}/payments/{}".format(self.base_url, transaction_id)
+        result = await self._request(
+            method="GET", url=check_transaction_url, auth=self.auth
         )
-        result = await self._request(method="GET",
-                                     url=check_transaction_url,
-                                     auth=self.auth)
 
         result_json = json.loads(result)
         return result_json.get("status", "")

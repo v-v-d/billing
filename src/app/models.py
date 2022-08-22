@@ -87,7 +87,7 @@ class Transaction(Base, TimestampMixin):
 
     @classmethod
     async def get_by_id(
-            cls, db_session: AsyncSession, transaction_id: UUID4
+        cls, db_session: AsyncSession, transaction_id: UUID4
     ) -> "Transaction":
         stmt = sa.select(Transaction).where(Transaction.id == transaction_id)
         return await cls._get_obj(db_session, stmt)
@@ -152,7 +152,7 @@ class UserFilm(Base, TimestampMixin):
 
     @classmethod
     async def update(
-            cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
+        cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
     ):
         stmt = sa.select(UserFilm).where(
             and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
