@@ -66,7 +66,7 @@ class Transaction(Base, TimestampMixin):
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
-    user_film = relationship("UserFilm", back_populates="transactions", uselist=False)
+    user_film = relationship("UserFilm", back_populates="transaction", uselist=False)
 
     @classmethod
     async def _get_obj(cls, db_session, stmt: sa.sql.Select) -> "Transaction":
