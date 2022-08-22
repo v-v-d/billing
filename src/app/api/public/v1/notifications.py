@@ -1,17 +1,12 @@
 import logging
-import json
 
-import aiohttp
-from aiohttp import ClientConnectionError
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.database import get_db
 from app.api.public.v1.schemas import PaymentNotificationSchema
-from app.database import session_scope
 from app.integrations.yookassa import yookassa_client
-from app.models import UserFilm, ObjectDoesNotExistError, TransactionStatusEnum, Transaction
-from app.settings import settings
+from app.models import ObjectDoesNotExistError, TransactionStatusEnum, Transaction
 
 router = APIRouter()
 logger = logging.getLogger("notification")
@@ -22,7 +17,6 @@ logger = logging.getLogger("notification")
 )
 async def on_after_payment(payment_data: PaymentNotificationSchema,
                            db_session: AsyncSession = Depends(get_db)):
-
     transaction_id = payment_data.object.id
     transaction_status = yookassa_client.check_transaction(transaction_id)
 
