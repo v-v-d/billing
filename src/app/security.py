@@ -16,6 +16,9 @@ class NotAuthenticatedError(BaseSecurityError):
 
 
 class TokenData(BaseModel):
+    user_id: str
+    login: str
+    email: str
     roles: list[str]
 
 

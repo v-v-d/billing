@@ -8,7 +8,7 @@ from tests.functional.utils import fake
 pytestmark = pytest.mark.asyncio
 
 
-async def test_ok(client, user_film, user_id, film_id, price) -> None:
+async def test_ok(client, user_film, user_id, film_id) -> None:
     response = await client.get(
         path=app.url_path_for(
             name="retrieve",
@@ -22,8 +22,7 @@ async def test_ok(client, user_film, user_id, film_id, price) -> None:
         "id": ANY,
         "user_id": user_id,
         "film_id": film_id,
-        "price": price,
-        "is_active": True,
+        "is_active": False,
         "watched": ANY,
     }
     assert response.json() == expected
