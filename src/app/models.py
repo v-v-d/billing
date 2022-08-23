@@ -7,7 +7,7 @@ from pydantic import UUID4
 from sqlalchemy import and_, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_mixin, relationship
+from sqlalchemy.orm import declarative_mixin, relationship, selectinload
 
 from app.database import Base
 
@@ -60,9 +60,7 @@ class Transaction(Base, TimestampMixin):
         sa.Numeric(14, 3), sa.CheckConstraint("amount>0"), nullable=False
     )
     type = sa.Column(sa.Enum(TypeEnum), nullable=False, index=True)
-    status = sa.Column(
-        sa.Enum(StatusEnum), default=StatusEnum.CREATED.value, index=True
-    )
+    status = sa.Column(sa.Enum(StatusEnum), default=StatusEnum.CREATED, index=True)
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
@@ -82,7 +80,11 @@ class Transaction(Base, TimestampMixin):
     async def get_by_id(
         cls, db_session: AsyncSession, transaction_id: UUID4
     ) -> "Transaction":
-        stmt = sa.select(Transaction).where(Transaction.id == transaction_id)
+        stmt = (
+            sa.select(Transaction)
+            .where(Transaction.id == transaction_id)
+            .options(selectinload(Transaction.user_film))
+        )
         return await cls._get_obj(db_session, stmt)
 
 
