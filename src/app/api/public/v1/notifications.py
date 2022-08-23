@@ -17,7 +17,7 @@ logger = logging.getLogger("notification")
 
 @router.post("/yookassa/on-after-payment", description="Callback from yookassa")
 async def on_after_payment(
-        payment_data: PaymentNotificationSchema, db_session: AsyncSession = Depends(get_db)
+    payment_data: PaymentNotificationSchema, db_session: AsyncSession = Depends(get_db)
 ):
     transaction_id = payment_data.object.id
     try:
