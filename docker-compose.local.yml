@@ -11,7 +11,7 @@ services:
       - ./shared:/code/shared
       - ./shared/logs:/code/shared/logs
     env_file:
-      - .env.sample
+      - .env.tests
     environment:
       - DEBUG=False
       - APM_ENABLED=False
