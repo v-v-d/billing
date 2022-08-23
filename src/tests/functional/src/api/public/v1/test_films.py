@@ -166,6 +166,7 @@ async def test_ok(
     )
     mocked_yookassa.assert_called_with(
         method="POST",
+        url=f"{settings.YOOKASSA_INTEGRATION.BASE_URL}/v3/payments",
         json={
             "amount": {"value": "300.00", "currency": "RUB"},
             "confirmation": {
@@ -293,6 +294,7 @@ async def test_failed_yookassa(
     )
     failed_yookassa.assert_called_with(
         method="POST",
+        url=f"{settings.YOOKASSA_INTEGRATION.BASE_URL}/v3/payments",
         json={
             "amount": {"value": "300.00", "currency": "RUB"},
             "confirmation": {

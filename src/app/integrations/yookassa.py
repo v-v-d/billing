@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 import aiohttp
+from furl import furl
 from pydantic import AnyHttpUrl, UUID4, BaseModel, ValidationError
 
 from app.integrations.base import AbstractHttpClient
@@ -68,8 +69,9 @@ class YookassaHttpClient(AbstractHttpClient):
             },
         }
         headers = {"Idempotence-Key": idempotence_key}
+        url = furl(self.base_url).add(path="/v3/payments")
 
-        response = await self._request(method="POST", json=data, headers=headers)
+        response = await self._request(method="POST", url=url.url, json=data, headers=headers)
 
         try:
             return YookassaPaymentResponseSchema(**response)
