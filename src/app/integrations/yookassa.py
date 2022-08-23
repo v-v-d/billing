@@ -18,11 +18,9 @@ class YookassaHttpClientError(Exception):
 class YookassaHttpClient(AbstractHttpClient):
     base_url: AnyHttpUrl = settings.YOOKASSA_INTEGRATION.BASE_URL
     client_exc: Exception = YookassaHttpClientError
-    auth: aiohttp.BasicAuth = (
-        aiohttp.BasicAuth(
-            settings.YOOKASSA_INTEGRATION.AUTH_USER,
-            settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD
-        )
+    auth: aiohttp.BasicAuth = aiohttp.BasicAuth(
+        settings.YOOKASSA_INTEGRATION.AUTH_USER,
+        settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD,
     )
 
     def __init__(self, http_transport: AbstractHttpTransport) -> None:
