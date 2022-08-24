@@ -1,1 +1,1 @@
-from app.api.public.v1 import receipts, transactions, films
+from app.api.public.v1 import receipts, transactions, films, notifications

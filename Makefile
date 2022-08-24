@@ -23,7 +23,7 @@ stop-s-worker:
 	docker-compose stop subscription-worker
 
 tests:
-	docker-compose -f docker-compose.local.yml up --build --exit-code-from sut
+	docker-compose -f docker-compose.local.yml up --build --exit-code-from sut --force-recreate test-db sut
 
 migrate:
 	docker-compose up -d app && docker-compose exec app alembic revision --autogenerate -m "$(name)"
