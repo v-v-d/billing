@@ -1,6 +1,7 @@
+import sqlalchemy as sa
 from fastapi import APIRouter, Depends
 from fastapi_pagination import LimitOffsetPage
-from fastapi_pagination.ext.orm import paginate
+from fastapi_pagination.ext.async_sqlalchemy import paginate
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Transaction
@@ -13,8 +14,7 @@ router = APIRouter()
 @router.get(
     "/",
     response_model=LimitOffsetPage[TransactionOutput],
-    description="Retrieve transaction",
+    description="Retrieve transactions",
 )
 async def get_users_transactions(db_session: AsyncSession = Depends(get_db)):
-    transactions = await Transaction.get(db_session)
-    return paginate(TransactionOutput.from_orm(transactions))
+    return paginate(db_session, sa.select(Transaction))
