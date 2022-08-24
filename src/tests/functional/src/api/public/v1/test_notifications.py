@@ -162,7 +162,7 @@ async def test_yookassa_notification_payment_canceled(
     user_film = result.scalar()
 
     assert not user_film.is_active
-    assert user_film.transaction.status == Transaction.StatusEnum.CREATED
+    assert user_film.transaction.status == Transaction.StatusEnum.CANCELED
 
 
 async def test_yookassa_notification_failure(
