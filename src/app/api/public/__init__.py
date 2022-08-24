@@ -13,3 +13,4 @@ public_api = APIRouter(
 public_api.include_router(v1.films.router, prefix="/v1/films")
 public_api.include_router(v1.receipts.router, prefix="/v1/receipts")
 public_api.include_router(v1.transactions.router, prefix="/v1/transactions")
+public_api.include_router(v1.notifications.router, prefix="/v1/notifications")

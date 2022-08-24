@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 import sqlalchemy as sa
 from pydantic import UUID4
-from sqlalchemy import and_
+from sqlalchemy import and_, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import declarative_mixin, relationship
@@ -111,6 +111,9 @@ class Transaction(Base, TimestampMixin, MethodsExtensionMixin):
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
+    user_film = relationship(
+        "UserFilm", lazy="joined", back_populates="transaction", uselist=False
+    )
 
 
 class Receipt(Base, TimestampMixin, MethodsExtensionMixin):
@@ -164,6 +167,8 @@ class UserFilm(Base, TimestampMixin, MethodsExtensionMixin):
     film_id = sa.Column(UUID(as_uuid=True), nullable=False)
     watched = sa.Column(sa.Boolean, default=False)
     is_active = sa.Column(sa.Boolean, default=False)
+    transaction_id = sa.Column(UUID(as_uuid=True), ForeignKey("transactions.id"))
+    transaction = relationship("Transaction", back_populates="user_film")
 
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
 
