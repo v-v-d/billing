@@ -39,6 +39,7 @@ async def on_after_payment(
         transaction = result.scalar()
         if not transaction:
             logger.exception("Unknown transaction `id` received: %s", transaction_id)
-        else:
-            transaction.user_film.is_active = True
+            return
+
+        transaction.user_film.is_active = True
             transaction.status = transaction_data.status
