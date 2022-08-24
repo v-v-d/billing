@@ -111,7 +111,10 @@ class Transaction(Base, TimestampMixin, MethodsExtensionMixin):
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
     receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
-    user_film = relationship("UserFilm", lazy="joined", back_populates="transaction", uselist=False)
+    user_film = relationship(
+        "UserFilm", lazy="joined", back_populates="transaction", uselist=False
+    )
+
 
 class Receipt(Base, TimestampMixin, MethodsExtensionMixin):
     __tablename__ = "receipts"

@@ -16,6 +16,7 @@ class PaymentNotificationSchema(BaseModel):
     event: str
     object: PaymentObjectSchema
 
+
 class PurchaseRequestSchema(ORJSONModel):
     payment_type: Transaction.PaymentType
 

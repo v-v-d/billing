@@ -72,13 +72,14 @@ class YookassaHttpClient(AbstractHttpClient):
         headers = {"Idempotence-Key": idempotence_key}
         url = furl(self.base_url).add(path="/v3/payments")
 
-        response = await self._request(method="POST", url=url.url, json=data, headers=headers)
+        response = await self._request(
+            method="POST", url=url.url, json=data, headers=headers
+        )
 
         try:
             return YookassaPaymentResponseSchema(**response)
         except ValidationError as err:
             raise self.client_exc(str(err)) from err
-
 
     async def get_transaction(self, transaction_id: UUID4) -> PaymentObjectSchema:
         """
@@ -92,5 +93,6 @@ class YookassaHttpClient(AbstractHttpClient):
             return PaymentObjectSchema(**result)
         except ValidationError as err:
             raise self.client_exc(str(err)) from err
+
 
 yookassa_client = YookassaHttpClient(AiohttpTransport())
