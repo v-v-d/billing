@@ -9,7 +9,7 @@ from starlette import status
 from app.api.dependencies.database import get_db
 from app.api.public.v1.schemas import PaymentNotificationSchema
 from app.integrations.yookassa import yookassa_client, YookassaHttpClientError
-from app.models import ObjectDoesNotExistError, Transaction
+from app.models import Transaction
 
 router = APIRouter()
 logger = logging.getLogger("notification")
@@ -42,4 +42,4 @@ async def on_after_payment(
             return
 
         transaction.user_film.is_active = True
-            transaction.status = transaction_data.status
+        transaction.status = Transaction.StatusEnum(transaction_data.status)

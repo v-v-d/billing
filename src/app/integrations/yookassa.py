@@ -3,7 +3,7 @@ from typing import Any
 
 import aiohttp
 from furl import furl
-from pydantic import AnyHttpUrl, ValidationError
+from pydantic import AnyHttpUrl, ValidationError, UUID4
 
 from app.api.public.v1.schemas import PaymentObjectSchema
 from app.integrations.base import AbstractHttpClient
@@ -32,12 +32,12 @@ class YookassaHttpClient(AbstractHttpClient):
     async def pay(self, *args, **kwargs) -> None:
         await self._request(*args, **kwargs, auth=self.auth)
 
-    async def get_transaction(self, transaction_id: str) -> PaymentObjectSchema:
+    async def get_transaction(self, transaction_id: UUID4) -> PaymentObjectSchema:
         """
         Gets transaction info from  yookassa by GET request to URL:
         https://api.yookassa.ru/v3/payments/{payment_id}
         """
-        url = furl(self.base_url).add(path="/payments").add(path=str(transaction_id))
+        url = furl(self.base_url).add(path="/v3/payments").add(path=str(transaction_id))
         result = await self._request(method="GET", url=url.url)
 
         try:

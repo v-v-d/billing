@@ -2,6 +2,7 @@ from typing import Any
 import sqlalchemy as sa
 
 import pytest
+from sqlalchemy.orm import selectinload
 
 from app.integrations.yookassa import YookassaHttpClient
 from app.main import app
@@ -94,13 +95,13 @@ async def db_data(db_session, transaction_id, transaction_ext_id, user_id) -> No
 
 
 async def test_yookassa_notification_payment_succeeded(
-    client,
-    db_session,
-    db_data,
-    payment_data_succeeded,
-    mocked_yookassa_answer_succeeded,
-    transaction_id,
-    mocker,
+        client,
+        db_session,
+        db_data,
+        payment_data_succeeded,
+        mocked_yookassa_answer_succeeded,
+        transaction_id,
+        mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
@@ -116,21 +117,23 @@ async def test_yookassa_notification_payment_succeeded(
 
     stmt = sa.select(UserFilm).where(
         UserFilm.transaction_id == transaction_id,
-    )
+    ).options(selectinload(UserFilm.transaction))
+
     result = await db_session.execute(stmt)
     user_film = result.scalar()
 
     assert user_film.is_active
+    assert user_film.transaction.status == Transaction.StatusEnum.SUCCEEDED
 
 
 async def test_yookassa_notification_payment_canceled(
-    client,
-    db_session,
-    db_data,
-    payment_data_succeeded,
-    mocked_yookassa_answer_canceled,
-    transaction_id,
-    mocker,
+        client,
+        db_session,
+        db_data,
+        payment_data_succeeded,
+        mocked_yookassa_answer_canceled,
+        transaction_id,
+        mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
@@ -146,21 +149,23 @@ async def test_yookassa_notification_payment_canceled(
 
     stmt = sa.select(UserFilm).where(
         UserFilm.transaction_id == transaction_id,
-    )
+    ).options(selectinload(UserFilm.transaction))
+
     result = await db_session.execute(stmt)
     user_film = result.scalar()
 
     assert not user_film.is_active
+    assert user_film.transaction.status == Transaction.StatusEnum.CREATED
 
 
 async def test_yookassa_notification_failure(
-    client,
-    db_session,
-    db_data,
-    payment_data_succeeded,
-    mocked_yookassa_answer_unavailable,
-    transaction_id,
-    mocker,
+        client,
+        db_session,
+        db_data,
+        payment_data_succeeded,
+        mocked_yookassa_answer_unavailable,
+        transaction_id,
+        mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
@@ -176,11 +181,11 @@ async def test_yookassa_notification_failure(
 
 
 async def test_yookassa_notification_wrong_id(
-    client,
-    payment_data_wrong_transaction_id,
-    mocked_yookassa_answer_succeeded,
-    transaction_id,
-    mocker,
+        client,
+        payment_data_wrong_transaction_id,
+        mocked_yookassa_answer_succeeded,
+        transaction_id,
+        mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
