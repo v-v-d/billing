@@ -7,6 +7,7 @@ import aiohttp
 from furl import furl
 from pydantic import AnyHttpUrl, UUID4, BaseModel, ValidationError
 
+from app.api.public.v1.schemas import PaymentObjectSchema
 from app.integrations.base import AbstractHttpClient
 from app.settings import settings
 from app.transports import AbstractHttpTransport, AiohttpTransport
@@ -78,5 +79,18 @@ class YookassaHttpClient(AbstractHttpClient):
         except ValidationError as err:
             raise self.client_exc(str(err)) from err
 
+
+    async def get_transaction(self, transaction_id: UUID4) -> PaymentObjectSchema:
+        """
+        Gets transaction info from  yookassa by GET request to URL:
+        https://api.yookassa.ru/v3/payments/{payment_id}
+        """
+        url = furl(self.base_url).add(path="/v3/payments").add(path=str(transaction_id))
+        result = await self._request(method="GET", url=url.url)
+
+        try:
+            return PaymentObjectSchema(**result)
+        except ValidationError as err:
+            raise self.client_exc(str(err)) from err
 
 yookassa_client = YookassaHttpClient(AiohttpTransport())

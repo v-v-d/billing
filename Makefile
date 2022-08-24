@@ -4,6 +4,9 @@ start:
 stop:
 	docker-compose down
 
+stop-tests:
+	docker-compose -f docker-compose.local.yml down
+
 start-api:
 	docker-compose up --build -d app
 
