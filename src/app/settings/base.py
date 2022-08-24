@@ -139,20 +139,12 @@ class LoggingSettings(BaseSettings):
         env_prefix = "LOGGING_"
 
 
-class AuthIntegrationSettings(BaseSettings):
+class AsyncAPIIntegrationSettings(BaseSettings):
     BASE_URL: AnyHttpUrl
     TIMEOUT_SEC: int = 10
 
     class Config:
-        env_prefix = "AUTH_INTEGRATION_"
-
-
-class NotificationsIntegrationSettings(BaseSettings):
-    BASE_URL: AnyHttpUrl
-    TIMEOUT_SEC: int = 10
-
-    class Config:
-        env_prefix = "NOTIFICATIONS_INTEGRATION_"
+        env_prefix = "ASYNC_API_INTEGRATION_"
 
 
 class YookassaIntegrationSettings(BaseSettings):
@@ -160,6 +152,7 @@ class YookassaIntegrationSettings(BaseSettings):
     TIMEOUT_SEC: int = 10
     AUTH_USER: str
     AUTH_PASSWORD: str
+    RETURN_URL_PATTERN: str = "https://billing:5000/api/v1/transactions/{}"
 
     class Config:
         env_prefix = "YOOKASSA_INTEGRATION_"
@@ -201,9 +194,6 @@ class CommonSettings(BaseSettings):
     REDIS: RedisSettings = RedisSettings()
     DB: DatabaseSettings = DatabaseSettings()
     LOGS: LoggingSettings = LoggingSettings()
-    AUTH_INTEGRATION: AuthIntegrationSettings = AuthIntegrationSettings()
+    ASYNC_API_INTEGRATION: AsyncAPIIntegrationSettings = AsyncAPIIntegrationSettings()
     YOOKASSA_INTEGRATION: YookassaIntegrationSettings = YookassaIntegrationSettings()
-    NOTIFICATIONS_INTEGRATION: NotificationsIntegrationSettings = (
-        NotificationsIntegrationSettings()
-    )
     BACKGROUND: BackgroundTasksSettings = BackgroundTasksSettings()

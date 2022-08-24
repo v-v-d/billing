@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
+from typing import Any, Optional
 
 import sqlalchemy as sa
 from pydantic import UUID4
@@ -28,30 +29,74 @@ class TimestampMixin:
     )
 
 
-class Transaction(Base, TimestampMixin):
+@declarative_mixin
+class MethodsExtensionMixin:
+    @classmethod
+    async def get(cls, session: AsyncSession, **kwargs):
+        filters = [
+            getattr(cls, field_name) == field_val
+            for field_name, field_val in kwargs.items()
+        ]
+
+        stmt = sa.select(cls).where(and_(*filters))
+        result = await session.execute(stmt)
+        obj = result.scalar()
+
+        if not obj:
+            raise ObjectDoesNotExistError
+
+        return obj
+
+    @classmethod
+    async def create(cls, session: AsyncSession, **kwargs):
+        obj = cls(**kwargs)
+        session.add(obj)
+        await session.commit()
+        await session.refresh(obj)
+
+        return obj
+
+    @classmethod
+    async def get_or_create(
+        cls, session: AsyncSession, defaults: Optional[dict[str, Any]] = None, **kwargs
+    ):
+        """
+        Gets object for given kwargs, if not found create it with additional kwargs
+        from defaults dict.
+        """
+        if defaults is None:
+            defaults = {}
+
+        try:
+            return await cls.get(session, **kwargs), False
+        except ObjectDoesNotExistError:
+            return await cls.create(session, **defaults, **kwargs), True
+
+
+class Transaction(Base, TimestampMixin, MethodsExtensionMixin):
     __tablename__ = "transactions"
     __table_args__ = (sa.UniqueConstraint("id", "type", name="_id_type_uc"),)
 
     class TypeEnum(enum.Enum):
-        PAYMENT = "payment"
-        REFUND = "refund"
+        PAYMENT = "PAYMENT"
+        REFUND = "REFUND"
 
     class StatusEnum(enum.Enum):
         # custom
-        CREATED = "created"
-        FAILED = "failed"
+        CREATED = "CREATED"
+        FAILED = "FAILED"
 
         # provided by yookassa
-        PENDING = "pending"
-        WAITING_FOR_CAPTURE = "waiting_for_capture"
-        SUCCEEDED = "succeeded"
-        CANCELED = "canceled"
+        PENDING = "PENDING"
+        WAITING_FOR_CAPTURE = "WAITING_FOR_CAPTURE"
+        SUCCEEDED = "SUCCEEDED"
+        CANCELED = "CANCELED"
 
     class PaymentType(enum.Enum):
-        CARD = "card"
-        APAY = "applepay"
-        GPAY = "googlepay"
-        QR = "QR-code"
+        CARD = "CARD"
+        APAY = "APPLEPAY"
+        GPAY = "GOOGLEPAY"
+        QR = "QR-CODE"
 
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ext_id = sa.Column(UUID(as_uuid=True), unique=True)
@@ -88,18 +133,18 @@ class Transaction(Base, TimestampMixin):
         return await cls._get_obj(db_session, stmt)
 
 
-class Receipt(Base, TimestampMixin):
+class Receipt(Base, TimestampMixin, MethodsExtensionMixin):
     __tablename__ = "receipts"
 
     class StatusEnum(enum.Enum):
         # custom
-        CREATED = "created"
-        FAILED = "failed"
+        CREATED = "CREATED"
+        FAILED = "FAILED"
 
         # provided by yookassa
-        PENDING = "pending"
-        SUCCEEDED = "succeeded"
-        CANCELED = "canceled"
+        PENDING = "PENDING"
+        SUCCEEDED = "SUCCEEDED"
+        CANCELED = "CANCELED"
 
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ext_id = sa.Column(UUID(as_uuid=True), index=True)
@@ -114,12 +159,12 @@ class Receipt(Base, TimestampMixin):
     items = relationship("ReceiptItem", lazy="joined")
 
 
-class ReceiptItem(Base, TimestampMixin):
+class ReceiptItem(Base, TimestampMixin, MethodsExtensionMixin):
     __tablename__ = "receipt_items"
 
     class TypeEnum(enum.Enum):
-        FILM = "film"
-        SUBSCRIPTION = "subscription"
+        FILM = "FILM"
+        SUBSCRIPTION = "SUBSCRIPTION"
 
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     receipt_id = sa.Column(
@@ -131,32 +176,23 @@ class ReceiptItem(Base, TimestampMixin):
     type = sa.Column(sa.Enum(TypeEnum), nullable=False)
 
 
-class UserFilm(Base, TimestampMixin):
+class UserFilm(Base, TimestampMixin, MethodsExtensionMixin):
     __tablename__ = "users_films"
 
     id = sa.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = sa.Column(UUID(as_uuid=True), nullable=False)
     film_id = sa.Column(UUID(as_uuid=True), nullable=False)
     transaction_id = sa.Column(UUID(as_uuid=True), ForeignKey("transactions.id"))
-    price = sa.Column(sa.Integer, nullable=False)
     watched = sa.Column(sa.Boolean, default=False)
     is_active = sa.Column(sa.Boolean, default=True)
     transaction = relationship("Transaction", back_populates="user_film")
-
     __table_args__ = (sa.UniqueConstraint("user_id", "film_id", name="_user_film"),)
 
     @classmethod
     async def update(
         cls, session: AsyncSession, user_id: UUID4, film_id: UUID4, **kwargs
-    ):
-        stmt = sa.select(UserFilm).where(
-            and_(UserFilm.user_id == user_id, UserFilm.film_id == film_id)
-        )
-        result = await session.execute(stmt)
-        user_film = result.scalar()
-
-        if not user_film:
-            raise ObjectDoesNotExistError
+    ) -> "UserFilm":
+        user_film = await cls.get(session, user_id=user_id, film_id=film_id)
 
         for key, value in kwargs.items():
             if key not in ("user_id", "film_id"):
