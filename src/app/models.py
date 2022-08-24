@@ -30,7 +30,7 @@ class TimestampMixin:
 
 
 @declarative_mixin
-class MethodsExtensionMixin:
+class   MethodsExtensionMixin:
     @classmethod
     async def get(cls, session: AsyncSession, **kwargs):
         filters = [
