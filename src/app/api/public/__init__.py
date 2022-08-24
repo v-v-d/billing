@@ -7,7 +7,6 @@ public_api = APIRouter(
     responses={
         status.HTTP_401_UNAUTHORIZED: {"model": ErrorSchema},
         status.HTTP_403_FORBIDDEN: {"model": ErrorSchema},
-
     },
 )
 

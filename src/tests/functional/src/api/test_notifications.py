@@ -95,13 +95,13 @@ async def db_data(db_session, transaction_id, transaction_ext_id, user_id) -> No
 
 
 async def test_yookassa_notification_payment_succeeded(
-        client,
-        db_session,
-        db_data,
-        payment_data_succeeded,
-        mocked_yookassa_answer_succeeded,
-        transaction_id,
-        mocker,
+    client,
+    db_session,
+    db_data,
+    payment_data_succeeded,
+    mocked_yookassa_answer_succeeded,
+    transaction_id,
+    mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
@@ -115,9 +115,13 @@ async def test_yookassa_notification_payment_succeeded(
 
     assert response.status_code == 200, response.text
 
-    stmt = sa.select(UserFilm).where(
-        UserFilm.transaction_id == transaction_id,
-    ).options(selectinload(UserFilm.transaction))
+    stmt = (
+        sa.select(UserFilm)
+        .where(
+            UserFilm.transaction_id == transaction_id,
+        )
+        .options(selectinload(UserFilm.transaction))
+    )
 
     result = await db_session.execute(stmt)
     user_film = result.scalar()
@@ -127,13 +131,13 @@ async def test_yookassa_notification_payment_succeeded(
 
 
 async def test_yookassa_notification_payment_canceled(
-        client,
-        db_session,
-        db_data,
-        payment_data_succeeded,
-        mocked_yookassa_answer_canceled,
-        transaction_id,
-        mocker,
+    client,
+    db_session,
+    db_data,
+    payment_data_succeeded,
+    mocked_yookassa_answer_canceled,
+    transaction_id,
+    mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
@@ -147,9 +151,13 @@ async def test_yookassa_notification_payment_canceled(
 
     assert response.status_code == 200, response.text
 
-    stmt = sa.select(UserFilm).where(
-        UserFilm.transaction_id == transaction_id,
-    ).options(selectinload(UserFilm.transaction))
+    stmt = (
+        sa.select(UserFilm)
+        .where(
+            UserFilm.transaction_id == transaction_id,
+        )
+        .options(selectinload(UserFilm.transaction))
+    )
 
     result = await db_session.execute(stmt)
     user_film = result.scalar()
@@ -159,13 +167,13 @@ async def test_yookassa_notification_payment_canceled(
 
 
 async def test_yookassa_notification_failure(
-        client,
-        db_session,
-        db_data,
-        payment_data_succeeded,
-        mocked_yookassa_answer_unavailable,
-        transaction_id,
-        mocker,
+    client,
+    db_session,
+    db_data,
+    payment_data_succeeded,
+    mocked_yookassa_answer_unavailable,
+    transaction_id,
+    mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
@@ -181,11 +189,11 @@ async def test_yookassa_notification_failure(
 
 
 async def test_yookassa_notification_wrong_id(
-        client,
-        payment_data_wrong_transaction_id,
-        mocked_yookassa_answer_succeeded,
-        transaction_id,
-        mocker,
+    client,
+    payment_data_wrong_transaction_id,
+    mocked_yookassa_answer_succeeded,
+    transaction_id,
+    mocker,
 ) -> None:
     mocker.patch.object(
         YookassaHttpClient,
