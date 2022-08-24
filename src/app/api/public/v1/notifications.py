@@ -6,7 +6,11 @@ from starlette import status
 
 from app.api.dependencies.database import get_db
 from app.api.public.v1.schemas import PaymentNotificationSchema
-from app.integrations.yookassa import yookassa_client, YookassaHttpClientError, StatusEnum
+from app.integrations.yookassa import (
+    yookassa_client,
+    YookassaHttpClientError,
+    StatusEnum,
+)
 from app.models import Transaction, ObjectDoesNotExistError
 
 router = APIRouter()
@@ -28,7 +32,9 @@ async def on_after_payment(
     try:
         transaction = await Transaction.get(db_session, ext_id=payment_data.object.id)
     except ObjectDoesNotExistError:
-        logger.exception("Unknown transaction `id` received: %s", payment_data.object.id)
+        logger.exception(
+            "Unknown transaction `id` received: %s", payment_data.object.id
+        )
         return
 
     transaction.status = Transaction.StatusEnum(transaction_data.status.upper())
