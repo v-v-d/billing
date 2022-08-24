@@ -18,7 +18,7 @@ class TransactionOutput(BaseModel):
     payment_type: Transaction.PaymentType
     created_at: datetime
     updated_at: datetime
-    receipts: Optional[List[Receipt]]
+    receipts: List[Receipt]
     user_film: Optional[UserFilm]
 
     class Config:
