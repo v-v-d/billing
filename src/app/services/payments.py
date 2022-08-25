@@ -5,7 +5,11 @@ from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.integrations.async_api import async_api_client, AsyncAPIHttpClientError
-from app.integrations.yookassa import yookassa_client, YookassaHttpClientError, StatusEnum
+from app.integrations.yookassa import (
+    yookassa_client,
+    YookassaHttpClientError,
+    StatusEnum,
+)
 from app.models import Transaction, Receipt, ReceiptItem, UserFilm
 
 logger = getLogger(__name__)
@@ -127,7 +131,9 @@ class PaymentsService:
             type=Transaction.TypeEnum.REFUND,
             payment_type=payment_transaction.payment_type,
         )
-        refund_receipt = await Receipt.create(db_session, transaction_id=refund_transaction.id)
+        refund_receipt = await Receipt.create(
+            db_session, transaction_id=refund_transaction.id
+        )
 
         refund_receipt_items = [
             await ReceiptItem.create(
@@ -161,22 +167,26 @@ class PaymentsService:
         if transaction_data.status == StatusEnum.CANCELED:
             raise YookassaRefundError
 
-        refund_transaction.status = Transaction.StatusEnum(transaction_data.status.upper())
+        refund_transaction.status = Transaction.StatusEnum(
+            transaction_data.status.upper()
+        )
         payment_transaction.user_film.is_active = False
 
         return refund_transaction
 
     @staticmethod
-    def validate_transaction_for_refund(
-        transaction: Transaction, user_id: str
-    ) -> None:
+    def validate_transaction_for_refund(transaction: Transaction, user_id: str) -> None:
         if str(transaction.user_id) != user_id:
             raise PermissionDeniedError
 
         if transaction.status != Transaction.StatusEnum.SUCCEEDED:
             raise IncorrectTransactionStatusError
 
-        if not transaction.ext_id or not transaction.user_film or not transaction.user_film.is_active:
+        if (
+            not transaction.ext_id
+            or not transaction.user_film
+            or not transaction.user_film.is_active
+        ):
             raise NotAvalableForRefundError
 
         if transaction.user_film.watched:

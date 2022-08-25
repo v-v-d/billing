@@ -169,13 +169,10 @@ def mocked_yookassa(request, mocker: MockerFixture, transaction_ext_id) -> Magic
     mock = {
         "id": "216749f7-0016-50be-b000-078d43a63ae4",
         "status": request.param,
-        "amount": {
-          "value": "2.00",
-          "currency": "RUB"
-        },
+        "amount": {"value": "2.00", "currency": "RUB"},
         "created_at": "2017-10-04T19:27:51.407Z",
         "payment_id": transaction_ext_id,
-      }
+    }
 
     if request.param == StatusEnum.CANCELED.value:
         mock["cancellation_details"] = {
@@ -229,7 +226,7 @@ def expected_response(
             "film_id": film_id,
             "watched": False,
             "is_active": False,
-        }
+        },
     }
 
 
@@ -305,7 +302,7 @@ async def test_payment_not_found(client, headers) -> None:
 
 @pytest.mark.parametrize(
     "payment_transaction",
-    (Transaction.StatusEnum.SUCCEEDED, ),
+    (Transaction.StatusEnum.SUCCEEDED,),
     indirect=True,
 )
 async def test_permission_denied(
@@ -329,7 +326,7 @@ async def test_permission_denied(
 
 @pytest.mark.parametrize(
     "payment_transaction",
-    (Transaction.StatusEnum.CREATED, ),
+    (Transaction.StatusEnum.CREATED,),
     indirect=True,
 )
 async def test_incorrect_payment_status(
@@ -347,7 +344,9 @@ async def test_incorrect_payment_status(
     assert response.json()["detail"] == "Incorrect transaction status."
 
 
-async def test_payment_has_no_ext_id(client, headers, payment_transaction_wo_ext_id, transaction_id) -> None:
+async def test_payment_has_no_ext_id(
+    client, headers, payment_transaction_wo_ext_id, transaction_id
+) -> None:
     response = await client.post(
         path=app.url_path_for(name="refund", transaction_id=transaction_id),
         headers=headers,
@@ -359,10 +358,12 @@ async def test_payment_has_no_ext_id(client, headers, payment_transaction_wo_ext
 
 @pytest.mark.parametrize(
     "payment_transaction",
-    (Transaction.StatusEnum.SUCCEEDED, ),
+    (Transaction.StatusEnum.SUCCEEDED,),
     indirect=True,
 )
-async def test_payment_has_no_user_film(client, headers, transaction_id, payment_transaction) -> None:
+async def test_payment_has_no_user_film(
+    client, headers, transaction_id, payment_transaction
+) -> None:
     response = await client.post(
         path=app.url_path_for(name="refund", transaction_id=transaction_id),
         headers=headers,
@@ -398,14 +399,19 @@ async def test_user_film_already_inactive(
     [(Transaction.StatusEnum.SUCCEEDED, (True, True))],
     indirect=True,
 )
-async def test_user_film_already_watched(client, headers, transaction_id, payment_transaction, user_film) -> None:
+async def test_user_film_already_watched(
+    client, headers, transaction_id, payment_transaction, user_film
+) -> None:
     response = await client.post(
         path=app.url_path_for(name="refund", transaction_id=transaction_id),
         headers=headers,
     )
 
     assert response.status_code == 400, response.text
-    assert response.json()["detail"] == "Not available because the film has already been watched."
+    assert (
+        response.json()["detail"]
+        == "Not available because the film has already been watched."
+    )
 
 
 @pytest.mark.parametrize(
@@ -431,7 +437,10 @@ async def test_bad_yookassa_status(
     )
 
     assert response.status_code == 424, response.text
-    assert response.json()["detail"] == "Operation rejected. Please contact technical support."
+    assert (
+        response.json()["detail"]
+        == "Operation rejected. Please contact technical support."
+    )
 
 
 @pytest.mark.parametrize(
