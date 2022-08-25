@@ -12,5 +12,4 @@ admin_api = APIRouter(
     dependencies=[Depends(check_admin_role)],
 )
 
-admin_api.include_router(v1.receipts.router, prefix="/v1/receipts")
 admin_api.include_router(v1.transactions.router, prefix="/v1/transactions")

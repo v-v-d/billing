@@ -1,1 +1,1 @@
-from app.api.admin.v1 import receipts, transactions
+from app.api.admin.v1 import transactions

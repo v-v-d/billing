@@ -1,12 +1,13 @@
 from decimal import Decimal
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 from uuid import UUID
 
 import aiohttp
 from furl import furl
-from pydantic import AnyHttpUrl, UUID4, BaseModel, ValidationError
+from pydantic import AnyHttpUrl, UUID4, ValidationError
 
+from app.api.schemas import ORJSONModel
 from app.api.public.v1.schemas import PaymentObjectSchema
 from app.integrations.base import AbstractHttpClient
 from app.settings import settings
@@ -24,14 +25,24 @@ class StatusEnum(str, Enum):
     CANCELED = "canceled"
 
 
-class ResponseConfirmationSchema(BaseModel):
+class ResponseConfirmationSchema(ORJSONModel):
     confirmation_url: AnyHttpUrl
 
 
-class YookassaPaymentResponseSchema(BaseModel):
+class YookassaPaymentResponseSchema(ORJSONModel):
     id: UUID
     status: StatusEnum
     confirmation: ResponseConfirmationSchema
+
+
+class CancellationDetailsSchema(ORJSONModel):
+    reason: str
+
+
+class YookassaRefundResponseSchema(ORJSONModel):
+    id: UUID
+    status: StatusEnum
+    cancellation_details: Optional[CancellationDetailsSchema]
 
 
 class YookassaHttpClient(AbstractHttpClient):
@@ -91,6 +102,29 @@ class YookassaHttpClient(AbstractHttpClient):
 
         try:
             return PaymentObjectSchema(**result)
+        except ValidationError as err:
+            raise self.client_exc(str(err)) from err
+
+    async def refund(
+        self,
+        amount: Decimal,
+        payment_transaction_ext_id: UUID4,
+        idempotence_key: UUID4,
+    ) -> YookassaRefundResponseSchema:
+        data = {
+            "amount": {
+                "value": str(amount),
+                "currency": "RUB",
+            },
+            "payment_id": payment_transaction_ext_id,
+        }
+        headers = {"Idempotence-Key": idempotence_key}
+        url = furl(self.base_url).add(path="/v3/refunds")
+
+        response = await self._request(method="POST", url=url.url, json=data, headers=headers)
+
+        try:
+            return YookassaRefundResponseSchema(**response)
         except ValidationError as err:
             raise self.client_exc(str(err)) from err
 

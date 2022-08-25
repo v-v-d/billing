@@ -5,7 +5,7 @@ from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.integrations.async_api import async_api_client, AsyncAPIHttpClientError
-from app.integrations.yookassa import yookassa_client, YookassaHttpClientError
+from app.integrations.yookassa import yookassa_client, YookassaHttpClientError, StatusEnum
 from app.models import Transaction, Receipt, ReceiptItem, UserFilm
 
 logger = getLogger(__name__)
@@ -24,6 +24,26 @@ class AsyncAPIUnavailableError(BasePaymentsServiceError):
 
 
 class YookassaUnavailableError(BasePaymentsServiceError):
+    pass
+
+
+class PermissionDeniedError(BasePaymentsServiceError):
+    pass
+
+
+class NotAvalableForRefundError(BasePaymentsServiceError):
+    pass
+
+
+class IncorrectTransactionStatusError(BasePaymentsServiceError):
+    pass
+
+
+class AlreadyWatchedError(BasePaymentsServiceError):
+    pass
+
+
+class YookassaRefundError(BasePaymentsServiceError):
     pass
 
 
@@ -60,9 +80,8 @@ class PaymentsService:
             type=Transaction.TypeEnum.PAYMENT,
             payment_type=payment_type,
         )
-        transaction_id = (
-            transaction.id
-        )  # prevent sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
+        # prevent sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
+        transaction_id = transaction.id
 
         receipt = await Receipt.create(db_session, transaction_id=transaction.id)
         await ReceiptItem.create(
@@ -89,6 +108,79 @@ class PaymentsService:
         user_film.transaction = transaction
 
         return yookassa_data.confirmation.confirmation_url
+
+    async def refund_film(
+        self,
+        db_session: AsyncSession,
+        transaction_id: str,
+        user_id: str,
+        idempotence_key: UUID4,
+    ) -> Transaction:
+        payment_transaction = await Transaction.get(db_session, id=transaction_id)
+
+        self.validate_transaction_for_refund(payment_transaction, user_id)
+
+        refund_transaction = await Transaction.create(
+            db_session,
+            user_id=user_id,
+            amount=payment_transaction.amount,
+            type=Transaction.TypeEnum.REFUND,
+            payment_type=payment_transaction.payment_type,
+        )
+        refund_receipt = await Receipt.create(db_session, transaction_id=refund_transaction.id)
+
+        refund_receipt_items = [
+            await ReceiptItem.create(
+                db_session,
+                receipt_id=refund_receipt.id,
+                description=payment_receipt_item.description,
+                quantity=payment_receipt_item.quantity,
+                amount=payment_receipt_item.amount,
+                type=payment_receipt_item.type,
+            )
+            for payment_receipt_item in payment_transaction.receipt.items
+        ]
+
+        refund_receipt.items = refund_receipt_items
+        refund_transaction.receipt = refund_receipt
+        refund_transaction.user_film = payment_transaction.user_film
+
+        valid_amount = (Decimal(refund_transaction.amount) / 100).quantize(
+            Decimal(".01"), rounding=ROUND_HALF_UP
+        )
+
+        try:
+            transaction_data = await yookassa_client.refund(
+                valid_amount,
+                payment_transaction.ext_id,
+                idempotence_key,
+            )
+        except YookassaHttpClientError:
+            raise YookassaUnavailableError
+
+        if transaction_data.status == StatusEnum.CANCELED:
+            raise YookassaRefundError
+
+        refund_transaction.status = Transaction.StatusEnum(transaction_data.status.upper())
+        payment_transaction.user_film.is_active = False
+
+        return refund_transaction
+
+    @staticmethod
+    def validate_transaction_for_refund(
+        transaction: Transaction, user_id: str
+    ) -> None:
+        if str(transaction.user_id) != user_id:
+            raise PermissionDeniedError
+
+        if transaction.status != Transaction.StatusEnum.SUCCEEDED:
+            raise IncorrectTransactionStatusError
+
+        if not transaction.ext_id or not transaction.user_film or not transaction.user_film.is_active:
+            raise NotAvalableForRefundError
+
+        if transaction.user_film.watched:
+            raise AlreadyWatchedError
 
 
 payments_service = PaymentsService()
