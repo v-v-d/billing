@@ -99,8 +99,7 @@ async def test_admin_transactions(
 ) -> None:
 
     response = await client.get(
-        path=app.url_path_for(name="get_transactions"),
-        headers=headers
+        path=app.url_path_for(name="get_transactions"), headers=headers
     )
 
     assert response.status_code == 200, response.text
