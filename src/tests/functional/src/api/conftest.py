@@ -14,7 +14,7 @@ def valid_jwt_payload() -> dict[str, Any]:
         "login": fake.person.full_name(),
         "email": fake.person.email(),
         "is_admin": False,
-        "roles": [],
+        "roles": ["admin"],
     }
 
 
