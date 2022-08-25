@@ -4,11 +4,18 @@ from typing import Optional, List
 
 from pydantic import BaseModel, UUID4
 
+from app.api.internal.v1.schemas import UserFilmOutputSchema
 from app.models import Transaction, Receipt, UserFilm
 
 
-class TransactionOutput(BaseModel):
+class RecieptOutputScheme(BaseModel):
+    id: UUID4
+    ext_id: UUID4
+    transaction_id: Optional[UUID4]
+    status: Receipt.StatusEnum
 
+
+class TransactionOutput(BaseModel):
     id: UUID4
     ext_id: UUID4
     user_id: UUID4
@@ -18,8 +25,9 @@ class TransactionOutput(BaseModel):
     payment_type: Transaction.PaymentType
     created_at: datetime
     updated_at: datetime
-    receipts: List[Receipt]
-    user_film: Optional[UserFilm]
+    receipts: List[RecieptOutputScheme]
+    user_film: Optional[UserFilmOutputSchema]
 
     class Config:
         orm_mode = True
+        arbitrary_types_allowed = True
