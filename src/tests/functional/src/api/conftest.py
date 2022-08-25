@@ -14,7 +14,7 @@ def valid_jwt_payload() -> dict[str, Any]:
         "login": fake.person.full_name(),
         "email": fake.person.email(),
         "is_admin": False,
-        "roles": ["admin"],
+        "roles": [],
     }
 
 
@@ -22,6 +22,27 @@ def valid_jwt_payload() -> dict[str, Any]:
 def valid_jwt_token(valid_jwt_payload) -> str:
     token = jwt.encode(
         valid_jwt_payload,
+        settings.SECURITY.JWT_AUTH.SECRET_KEY,
+        algorithm=settings.SECURITY.JWT_AUTH.ALGORITHM,
+    )
+
+    return f"Bearer {token}"
+
+@pytest.fixture
+def valid_admin_payload() -> dict[str, Any]:
+    return {
+        "user_id": fake.cryptographic.uuid(),
+        "login": fake.person.full_name(),
+        "email": fake.person.email(),
+        "is_admin": True,
+        "roles": ["admin"],
+    }
+
+
+@pytest.fixture
+def valid_admin_token(valid_admin_payload) -> str:
+    token = jwt.encode(
+        valid_admin_payload,
         settings.SECURITY.JWT_AUTH.SECRET_KEY,
         algorithm=settings.SECURITY.JWT_AUTH.ALGORITHM,
     )

@@ -10,7 +10,7 @@ from app.models import Transaction, Receipt, UserFilm
 
 class ReceiptOutputScheme(BaseModel):
     id: UUID4
-    ext_id: Optional[UUID4]
+    ext_id: UUID4
     transaction_id: Optional[UUID4]
     status: Receipt.StatusEnum
 
@@ -20,7 +20,7 @@ class ReceiptOutputScheme(BaseModel):
 
 class TransactionOutput(BaseModel):
     id: UUID4
-    ext_id: Optional[UUID4]
+    ext_id: UUID4
     user_id: UUID4
     amount: int
     type: Transaction.TypeEnum
