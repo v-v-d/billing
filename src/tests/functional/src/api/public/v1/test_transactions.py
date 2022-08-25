@@ -107,7 +107,6 @@ async def test_admin_transactions(
     assert response.json()["items"][0]["id"] == transaction_id
     assert response.json()["items"][0]["ext_id"] == transaction_ext_id
 
-
 async def test_transaction_by_id(
     client,
     valid_jwt_payload,

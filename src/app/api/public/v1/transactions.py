@@ -21,8 +21,8 @@ router = APIRouter()
     description="Retrieve user transactions",
 )
 async def get_users_transactions(
-        db_session: AsyncSession = Depends(get_db),
-        jwt_payload: TokenData = Depends(decode_jwt),
+    db_session: AsyncSession = Depends(get_db),
+    jwt_payload: TokenData = Depends(decode_jwt),
 ):
     user_id = jwt_payload.user_id
     return await paginate(
@@ -40,9 +40,9 @@ async def get_users_transactions(
     description="Retrieve transaction",
 )
 async def get_transaction_by_id(
-        transaction_id: UUID4,
-        db_session: AsyncSession = Depends(get_db),
-        jwt_payload: TokenData = Depends(decode_jwt),
+    transaction_id: UUID4,
+    db_session: AsyncSession = Depends(get_db),
+    jwt_payload: TokenData = Depends(decode_jwt),
 ):
     user_id = jwt_payload.user_id
 
