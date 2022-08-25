@@ -9,7 +9,8 @@ from sqlalchemy.orm import selectinload
 from app.models import Transaction, ObjectDoesNotExistError
 from app.api.dependencies.database import get_db
 from app.api.admin.v1.schemas import TransactionOutput
-from app.security import TokenData, decode_jwt_token
+from app.security import TokenData
+from app.api.dependencies.auth import decode_jwt
 
 router = APIRouter()
 
@@ -20,11 +21,11 @@ router = APIRouter()
     description="Retrieve user transactions",
 )
 async def get_users_transactions(
-    db_session: AsyncSession = Depends(get_db),
-    jwt_payload: TokenData = Depends(decode_jwt_token),
+        db_session: AsyncSession = Depends(get_db),
+        jwt_payload: TokenData = Depends(decode_jwt),
 ):
     user_id = jwt_payload.user_id
-    return paginate(
+    return await paginate(
         db_session,
         sa.select(Transaction)
         .where(Transaction.user_id == user_id)
@@ -39,11 +40,12 @@ async def get_users_transactions(
     description="Retrieve transaction",
 )
 async def get_transaction_by_id(
-    transaction_id: UUID4,
-    db_session: AsyncSession = Depends(get_db),
-    jwt_payload: TokenData = Depends(decode_jwt_token),
+        transaction_id: UUID4,
+        db_session: AsyncSession = Depends(get_db),
+        jwt_payload: TokenData = Depends(decode_jwt),
 ):
     user_id = jwt_payload.user_id
+
     try:
         template = await Transaction.get(db_session, id=transaction_id, user_id=user_id)
     except ObjectDoesNotExistError:

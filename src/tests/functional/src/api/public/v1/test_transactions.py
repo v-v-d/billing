@@ -2,18 +2,14 @@ from typing import Any
 import sqlalchemy as sa
 
 import pytest
-from sqlalchemy.orm import selectinload
 
-from app.integrations.yookassa import YookassaHttpClient
 from app.main import app
-from app.models import UserFilm, Transaction, Receipt
+from app.models import Transaction, Receipt
 
 from tests.functional.utils import fake
 
-from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.asyncio
-
 
 @pytest.fixture
 async def user_id() -> str:
@@ -66,7 +62,8 @@ async def db_data(
     await db_session.execute(stmt2)
 
 
-async def test_transactions_by_id(
+
+async def test_user_transactions(
     client,
     valid_jwt_payload,
     valid_jwt_token,
@@ -76,12 +73,44 @@ async def test_transactions_by_id(
     transaction_id,
 ) -> None:
 
-    print("--- path: {}".format(app.url_path_for(name="get_transaction_by_id", transaction_id=transaction_id)))
+    response = await client.get(
+        path=app.url_path_for(name="get_users_transactions"),
+        headers=headers,
+    )
+
+    assert response.status_code == 200, response.text
+
+
+async def test_admin_transactions(
+    client,
+    valid_jwt_payload,
+    valid_jwt_token,
+    headers,
+    db_session,
+    db_data,
+    transaction_id,
+) -> None:
+
+    response = await client.get(
+        path=app.url_path_for(name="get_transactions"),
+    )
+
+    assert response.status_code == 200, response.text
+
+
+
+async def test_transaction_by_id(
+    client,
+    valid_jwt_payload,
+    valid_jwt_token,
+    headers,
+    db_session,
+    db_data,
+    transaction_id,
+) -> None:
     response = await client.get(
         path=app.url_path_for(name="get_transaction_by_id", transaction_id=transaction_id),
         headers=headers,
-        json={"query": valid_jwt_token},
     )
 
-    print("--- response: {}".format(response.text))
     assert response.status_code == 200, response.text

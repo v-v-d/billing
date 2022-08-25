@@ -8,16 +8,19 @@ from app.api.internal.v1.schemas import UserFilmOutputSchema
 from app.models import Transaction, Receipt, UserFilm
 
 
-class RecieptOutputScheme(BaseModel):
+class ReceiptOutputScheme(BaseModel):
     id: UUID4
-    ext_id: UUID4
+    ext_id: Optional[UUID4]
     transaction_id: Optional[UUID4]
     status: Receipt.StatusEnum
+
+    class Config:
+        orm_mode = True
 
 
 class TransactionOutput(BaseModel):
     id: UUID4
-    ext_id: UUID4
+    ext_id: Optional[UUID4]
     user_id: UUID4
     amount: int
     type: Transaction.TypeEnum
@@ -25,7 +28,7 @@ class TransactionOutput(BaseModel):
     payment_type: Transaction.PaymentType
     created_at: datetime
     updated_at: datetime
-    receipts: List[RecieptOutputScheme]
+    receipts: Optional[List[ReceiptOutputScheme]]
     user_film: Optional[UserFilmOutputSchema]
 
     class Config:
