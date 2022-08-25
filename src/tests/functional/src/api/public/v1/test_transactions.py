@@ -11,6 +11,7 @@ from tests.functional.utils import fake
 
 pytestmark = pytest.mark.asyncio
 
+
 @pytest.fixture
 async def user_id() -> str:
     return fake.cryptographic.uuid()
@@ -62,7 +63,6 @@ async def db_data(
     await db_session.execute(stmt2)
 
 
-
 async def test_user_transactions(
     client,
     valid_jwt_payload,
@@ -98,7 +98,6 @@ async def test_admin_transactions(
     assert response.status_code == 200, response.text
 
 
-
 async def test_transaction_by_id(
     client,
     valid_jwt_payload,
@@ -109,7 +108,9 @@ async def test_transaction_by_id(
     transaction_id,
 ) -> None:
     response = await client.get(
-        path=app.url_path_for(name="get_transaction_by_id", transaction_id=transaction_id),
+        path=app.url_path_for(
+            name="get_transaction_by_id", transaction_id=transaction_id
+        ),
         headers=headers,
     )
 
