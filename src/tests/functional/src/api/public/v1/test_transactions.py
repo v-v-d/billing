@@ -76,9 +76,17 @@ async def test_transactions_by_id(
     transaction_id,
 ) -> None:
 
-    print("--- path: {}".format(app.url_path_for(name="get_transaction_by_id", transaction_id=transaction_id)))
+    print(
+        "--- path: {}".format(
+            app.url_path_for(
+                name="get_transaction_by_id", transaction_id=transaction_id
+            )
+        )
+    )
     response = await client.get(
-        path=app.url_path_for(name="get_transaction_by_id", transaction_id=transaction_id),
+        path=app.url_path_for(
+            name="get_transaction_by_id", transaction_id=transaction_id
+        ),
         headers=headers,
         json={"query": valid_jwt_token},
     )
