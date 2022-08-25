@@ -28,6 +28,7 @@ def valid_jwt_token(valid_jwt_payload) -> str:
 
     return f"Bearer {token}"
 
+
 @pytest.fixture
 def valid_admin_payload() -> dict[str, Any]:
     return {
