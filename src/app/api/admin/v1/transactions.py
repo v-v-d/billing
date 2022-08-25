@@ -16,5 +16,5 @@ router = APIRouter()
     response_model=LimitOffsetPage[TransactionOutput],
     description="Retrieve transactions",
 )
-async def get_users_transactions(db_session: AsyncSession = Depends(get_db)):
+async def get_transactions(db_session: AsyncSession = Depends(get_db)):
     return paginate(db_session, sa.select(Transaction))
