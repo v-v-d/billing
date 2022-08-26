@@ -38,25 +38,6 @@ services:
       default:
       yandex:
 
-  subscription-worker:
-    container_name: subscription-worker
-    build:
-      context: .
-      target: prod
-    command: arq app.tasks.background.subscription.worker.WorkerSettings
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - ./src/app:/code/app
-      - ./shared:/code/shared
-      - ./shared/logs:/code/shared/logs
-    env_file:
-      - .env
-    networks:
-      default:
-      yandex:
-
   db:
     image: postgres:12.3-alpine
     expose:
