@@ -1,10 +1,8 @@
 """added_transaction_id
-
-Revision ID: 94f21b034c8b
-Revises: 77f5794a1db2
-Create Date: 2022-08-22 12:28:52.053120
-
-"""
+ Revision ID: 94f21b034c8b
+ Revises: bb8716cbc5fd
+ Create Date: 2022-08-22 12:28:52.053120
+ """
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql

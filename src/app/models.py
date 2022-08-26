@@ -8,7 +8,7 @@ from pydantic import UUID4
 from sqlalchemy import and_, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_mixin, relationship
+from sqlalchemy.orm import declarative_mixin, relationship, selectinload
 
 from app.database import Base
 
@@ -32,13 +32,25 @@ class TimestampMixin:
 @declarative_mixin
 class MethodsExtensionMixin:
     @classmethod
-    async def get(cls, session: AsyncSession, **kwargs):
+    async def get(
+        cls,
+        session: AsyncSession,
+        relations: Optional[list[relationship]] = None,
+        **kwargs,
+    ):
+        if relations is None:
+            relations = []
+
         filters = [
             getattr(cls, field_name) == field_val
             for field_name, field_val in kwargs.items()
         ]
 
         stmt = sa.select(cls).where(and_(*filters))
+
+        for relation in relations:
+            stmt = stmt.options(selectinload(relation))
+
         result = await session.execute(stmt)
         obj = result.scalar()
 
@@ -110,7 +122,9 @@ class Transaction(Base, TimestampMixin, MethodsExtensionMixin):
     )
     payment_type = sa.Column(sa.Enum(PaymentType), nullable=False, index=True)
 
-    receipts = relationship("Receipt", lazy="joined", back_populates="transactions")
+    receipt = relationship(
+        "Receipt", lazy="joined", back_populates="transactions", uselist=False
+    )
     user_film = relationship(
         "UserFilm", lazy="joined", back_populates="transaction", uselist=False
     )
@@ -138,7 +152,7 @@ class Receipt(Base, TimestampMixin, MethodsExtensionMixin):
         sa.Enum(StatusEnum), default=StatusEnum.CREATED.value, index=True
     )
 
-    transactions = relationship("Transaction", lazy="joined", back_populates="receipts")
+    transactions = relationship("Transaction", lazy="joined", back_populates="receipt")
     items = relationship("ReceiptItem", lazy="joined")
 
 
