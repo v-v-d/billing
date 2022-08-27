@@ -1,0 +1,2 @@
+class AsyncAPIHttpClientError(Exception):
+    pass

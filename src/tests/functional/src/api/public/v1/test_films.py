@@ -1,3 +1,4 @@
+import http
 from typing import Any
 from unittest.mock import ANY, MagicMock
 from uuid import UUID
@@ -8,8 +9,9 @@ from aiohttp import BasicAuth
 from async_asgi_testclient import TestClient
 from pytest_mock import MockerFixture
 
-from app.integrations.async_api import async_api_client
-from app.integrations.yookassa import yookassa_client
+from app.api.errors import ASYNC_API_SERVICE_ERROR, YOOKASSA_SERVICE_ERROR
+from app.integrations.async_api.client import async_api_client
+from app.integrations.yookassa.client import yookassa_client
 from app.main import app
 from app.models import Transaction
 from app.models import UserFilm
@@ -33,14 +35,6 @@ async def active_user_film(db_session, valid_jwt_payload, film_id) -> None:
         is_active=True,
     )
     await db_session.execute(stmt)
-
-
-@pytest.fixture
-def headers(valid_jwt_token) -> dict[str, Any]:
-    return {
-        "Authorization": valid_jwt_token,
-        "Idempotence-Key": fake.cryptographic.uuid(),
-    }
 
 
 @pytest.fixture
@@ -153,7 +147,7 @@ async def test_ok(
         json=request_body,
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text
     assert (
         response.json()["confirmation_url"]
         == mocked_yookassa.return_value["confirmation"]["confirmation_url"]
@@ -211,7 +205,7 @@ async def test_already_purchased(
         json=request_body,
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text
     assert not response.json()["confirmation_url"]
 
     mocked_async_api.assert_not_called()
@@ -233,7 +227,7 @@ async def test_lte_zero_price(
         json=request_body,
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text
     assert not response.json()["confirmation_url"]
 
     mocked_async_api.assert_called_with(
@@ -258,8 +252,8 @@ async def test_failed_async_api(
         json=request_body,
     )
 
-    assert response.status_code == 424, response.text
-    assert response.json()["detail"] == "Async API service error."
+    assert response.status_code == http.HTTPStatus.FAILED_DEPENDENCY, response.text
+    assert response.json()["detail"] == ASYNC_API_SERVICE_ERROR
 
     failed_async_api.assert_called_with(
         method="GET",
@@ -284,8 +278,8 @@ async def test_failed_yookassa(
         json=request_body,
     )
 
-    assert response.status_code == 424, response.text
-    assert response.json()["detail"] == "Yookassa service error."
+    assert response.status_code == http.HTTPStatus.FAILED_DEPENDENCY, response.text
+    assert response.json()["detail"] == YOOKASSA_SERVICE_ERROR
 
     mocked_async_api.assert_called_with(
         method="GET",

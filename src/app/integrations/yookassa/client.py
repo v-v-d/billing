@@ -1,48 +1,19 @@
 from decimal import Decimal
-from enum import Enum
-from typing import Any, Optional
-from uuid import UUID
+from typing import Any
 
 import aiohttp
 from furl import furl
 from pydantic import AnyHttpUrl, UUID4, ValidationError
 
-from app.api.schemas import ORJSONModel
 from app.api.public.v1.schemas import PaymentObjectSchema
 from app.integrations.base import AbstractHttpClient
+from app.integrations.yookassa.exceptions import YookassaHttpClientError
+from app.integrations.yookassa.schemas import (
+    YookassaPaymentResponseSchema,
+    YookassaRefundResponseSchema,
+)
 from app.settings import settings
 from app.transports import AbstractHttpTransport, AiohttpTransport
-
-
-class YookassaHttpClientError(Exception):
-    pass
-
-
-class StatusEnum(str, Enum):
-    PENDING = "pending"
-    WAITING_FOR_CAPTURE = "waiting_for_capture"
-    SUCCEEDED = "succeeded"
-    CANCELED = "canceled"
-
-
-class ResponseConfirmationSchema(ORJSONModel):
-    confirmation_url: AnyHttpUrl
-
-
-class YookassaPaymentResponseSchema(ORJSONModel):
-    id: UUID
-    status: StatusEnum
-    confirmation: ResponseConfirmationSchema
-
-
-class CancellationDetailsSchema(ORJSONModel):
-    reason: str
-
-
-class YookassaRefundResponseSchema(ORJSONModel):
-    id: UUID
-    status: StatusEnum
-    cancellation_details: Optional[CancellationDetailsSchema]
 
 
 class YookassaHttpClient(AbstractHttpClient):

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies.database import get_db
 from app.api.internal.v1.schemas import UserFilmOutputSchema
 from app.api.schemas import ErrorSchema
+from app.api.errors import USER_FILM_NOT_FOUND
 from app.models import UserFilm, ObjectDoesNotExistError
 
 router = APIRouter()
@@ -28,7 +29,7 @@ async def mark_as_watched(
     except ObjectDoesNotExistError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Film not found for user specified",
+            detail=USER_FILM_NOT_FOUND,
         )
 
     return UserFilmOutputSchema.from_orm(user_film)
@@ -52,7 +53,7 @@ async def retrieve(
     except ObjectDoesNotExistError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User film not found.",
+            detail=USER_FILM_NOT_FOUND,
         )
 
     return UserFilmOutputSchema.from_orm(user_film)

@@ -1,36 +1,51 @@
-import enum
-from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4
 
-from app.api.internal.v1.schemas import UserFilmOutputSchema
-from app.models import Transaction, Receipt, UserFilm
+from app.api.schemas import ORJSONModel
+from app.models import Transaction, Receipt, ReceiptItem
 
 
-class ReceiptOutputScheme(BaseModel):
+class UserFilmSchema(ORJSONModel):
     id: UUID4
-    ext_id: UUID4
-    transaction_id: Optional[UUID4]
-    status: Receipt.StatusEnum
+    user_id: UUID4
+    film_id: UUID4
+    watched: bool
+    is_active: bool
 
     class Config:
         orm_mode = True
 
 
-class TransactionOutput(BaseModel):
+class ReceiptItemSchema(ORJSONModel):
     id: UUID4
-    ext_id: UUID4
+    description: str
+    quantity: float
+    amount: float
+    type: ReceiptItem.TypeEnum
+
+    class Config:
+        orm_mode = True
+
+
+class ReceiptSchema(ORJSONModel):
+    id: UUID4
+    status: Receipt.StatusEnum
+    items: list[ReceiptItemSchema]
+
+    class Config:
+        orm_mode = True
+
+
+class TransactionSchema(ORJSONModel):
+    id: UUID4
     user_id: UUID4
-    amount: int
+    amount: float
     type: Transaction.TypeEnum
     status: Transaction.StatusEnum
     payment_type: Transaction.PaymentType
-    created_at: datetime
-    updated_at: datetime
-    receipt: Optional[ReceiptOutputScheme]
-    user_film: Optional[UserFilmOutputSchema]
+    receipt: ReceiptSchema
+    user_film: Optional[UserFilmSchema]
 
     class Config:
         orm_mode = True
-        arbitrary_types_allowed = True

@@ -1,3 +1,4 @@
+import http
 from typing import Any
 from unittest.mock import ANY, MagicMock
 from uuid import UUID
@@ -9,7 +10,17 @@ from async_asgi_testclient import TestClient
 from jose import jwt
 from pytest_mock import MockerFixture
 
-from app.integrations.yookassa import yookassa_client, StatusEnum
+from app.api.errors import (
+    TRANSACTION_NOT_FOUND,
+    PERMISSION_DENIED,
+    INCORRECT_TRANSACTION_STATUS,
+    REFUND_UNAVAILABLE,
+    USER_FILM_ALREADY_WATCHED,
+    REFUND_ERROR,
+    YOOKASSA_SERVICE_ERROR,
+)
+from app.integrations.yookassa.client import yookassa_client
+from app.integrations.yookassa.schemas import StatusEnum
 from app.main import app
 from app.models import Transaction, Receipt, ReceiptItem
 from app.models import UserFilm
@@ -254,7 +265,7 @@ async def test_ok(
         headers=headers,
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text
     assert response.json() == expected_response
 
     mocked_yookassa.assert_called_with(
@@ -296,8 +307,8 @@ async def test_payment_not_found(client, headers) -> None:
         headers=headers,
     )
 
-    assert response.status_code == 404, response.text
-    assert response.json()["detail"] == "Unknown transaction."
+    assert response.status_code == http.HTTPStatus.NOT_FOUND, response.text
+    assert response.json()["detail"] == TRANSACTION_NOT_FOUND
 
 
 @pytest.mark.parametrize(
@@ -320,8 +331,8 @@ async def test_permission_denied(
         headers=headers,
     )
 
-    assert response.status_code == 403, response.text
-    assert response.json()["detail"] == "Permission denied."
+    assert response.status_code == http.HTTPStatus.FORBIDDEN, response.text
+    assert response.json()["detail"] == PERMISSION_DENIED
 
 
 @pytest.mark.parametrize(
@@ -340,8 +351,8 @@ async def test_incorrect_payment_status(
         headers=headers,
     )
 
-    assert response.status_code == 400, response.text
-    assert response.json()["detail"] == "Incorrect transaction status."
+    assert response.status_code == http.HTTPStatus.BAD_REQUEST, response.text
+    assert response.json()["detail"] == INCORRECT_TRANSACTION_STATUS
 
 
 async def test_payment_has_no_ext_id(
@@ -352,8 +363,8 @@ async def test_payment_has_no_ext_id(
         headers=headers,
     )
 
-    assert response.status_code == 400, response.text
-    assert response.json()["detail"] == "Not available for refund."
+    assert response.status_code == http.HTTPStatus.BAD_REQUEST, response.text
+    assert response.json()["detail"] == REFUND_UNAVAILABLE
 
 
 @pytest.mark.parametrize(
@@ -369,8 +380,8 @@ async def test_payment_has_no_user_film(
         headers=headers,
     )
 
-    assert response.status_code == 400, response.text
-    assert response.json()["detail"] == "Not available for refund."
+    assert response.status_code == http.HTTPStatus.BAD_REQUEST, response.text
+    assert response.json()["detail"] == REFUND_UNAVAILABLE
 
 
 @pytest.mark.parametrize(
@@ -390,8 +401,8 @@ async def test_user_film_already_inactive(
         headers=headers,
     )
 
-    assert response.status_code == 400, response.text
-    assert response.json()["detail"] == "Not available for refund."
+    assert response.status_code == http.HTTPStatus.BAD_REQUEST, response.text
+    assert response.json()["detail"] == REFUND_UNAVAILABLE
 
 
 @pytest.mark.parametrize(
@@ -407,11 +418,8 @@ async def test_user_film_already_watched(
         headers=headers,
     )
 
-    assert response.status_code == 400, response.text
-    assert (
-        response.json()["detail"]
-        == "Not available because the film has already been watched."
-    )
+    assert response.status_code == http.HTTPStatus.BAD_REQUEST, response.text
+    assert response.json()["detail"] == USER_FILM_ALREADY_WATCHED
 
 
 @pytest.mark.parametrize(
@@ -436,11 +444,8 @@ async def test_bad_yookassa_status(
         headers=headers,
     )
 
-    assert response.status_code == 424, response.text
-    assert (
-        response.json()["detail"]
-        == "Operation rejected. Please contact technical support."
-    )
+    assert response.status_code == http.HTTPStatus.FAILED_DEPENDENCY, response.text
+    assert response.json()["detail"] == REFUND_ERROR
 
 
 @pytest.mark.parametrize(
@@ -465,5 +470,5 @@ async def test_failed_yookassa(
         headers=headers,
     )
 
-    assert response.status_code == 424, response.text
-    assert response.json()["detail"] == "Yookassa service error."
+    assert response.status_code == http.HTTPStatus.FAILED_DEPENDENCY, response.text
+    assert response.json()["detail"] == YOOKASSA_SERVICE_ERROR

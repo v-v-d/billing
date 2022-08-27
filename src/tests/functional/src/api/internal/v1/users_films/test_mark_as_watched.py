@@ -1,7 +1,9 @@
+import http
 from unittest.mock import ANY
 
 import pytest
 
+from app.api.errors import USER_FILM_NOT_FOUND
 from app.main import app
 from tests.functional.utils import fake
 
@@ -16,7 +18,7 @@ async def test_ok(client, user_film, user_id, film_id) -> None:
             film_id=film_id,
         ),
     )
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text
 
     expected = {
         "id": ANY,
@@ -36,5 +38,5 @@ async def test_not_found(client) -> None:
             film_id=fake.cryptographic.uuid(),
         ),
     )
-    assert response.status_code == 404, response.text
-    assert response.json()["detail"] == "Film not found for user specified"
+    assert response.status_code == http.HTTPStatus.NOT_FOUND, response.text
+    assert response.json()["detail"] == USER_FILM_NOT_FOUND

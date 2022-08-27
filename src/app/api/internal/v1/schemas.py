@@ -1,7 +1,9 @@
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4
+
+from app.api.schemas import ORJSONModel
 
 
-class UserFilmOutputSchema(BaseModel):
+class UserFilmOutputSchema(ORJSONModel):
     id: UUID4
     user_id: UUID4
     film_id: UUID4

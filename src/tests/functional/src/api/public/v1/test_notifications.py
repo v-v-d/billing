@@ -1,16 +1,14 @@
+import http
 from typing import Any
-import sqlalchemy as sa
 
 import pytest
+import sqlalchemy as sa
 from sqlalchemy.orm import selectinload
 
-from app.integrations.yookassa import YookassaHttpClient
+from app.integrations.yookassa.client import YookassaHttpClient
 from app.main import app
 from app.models import UserFilm, Transaction
-
 from tests.functional.utils import fake
-
-from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.asyncio
 
@@ -68,7 +66,7 @@ def mocked_yookassa_answer_canceled(transaction_ext_id) -> dict[str, Any]:
 
 @pytest.fixture
 def mocked_yookassa_answer_unavailable() -> dict[str, Any]:
-    return {"result": 404}
+    return {"result": http.HTTPStatus.NOT_FOUND}
 
 
 @pytest.fixture
@@ -112,7 +110,7 @@ async def test_yookassa_notification_payment_succeeded(
         path=app.url_path_for(name="on_after_payment"), json=payment_data_succeeded
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text
 
     stmt = (
         sa.select(UserFilm)
@@ -148,7 +146,7 @@ async def test_yookassa_notification_payment_canceled(
         path=app.url_path_for(name="on_after_payment"), json=payment_data_succeeded
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text
 
     stmt = (
         sa.select(UserFilm)
@@ -184,7 +182,7 @@ async def test_yookassa_notification_failure(
         path=app.url_path_for(name="on_after_payment"), json=payment_data_succeeded
     )
 
-    assert response.status_code == 424, response.text
+    assert response.status_code == http.HTTPStatus.FAILED_DEPENDENCY, response.text
 
 
 async def test_yookassa_notification_wrong_id(
@@ -205,4 +203,4 @@ async def test_yookassa_notification_wrong_id(
         json=payment_data_wrong_transaction_id,
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == http.HTTPStatus.OK, response.text

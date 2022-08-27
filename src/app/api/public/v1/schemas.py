@@ -2,16 +2,16 @@ from typing import Optional
 
 from app.api.schemas import ORJSONModel
 from app.models import Transaction, Receipt, ReceiptItem
-from pydantic import BaseModel, UUID4
+from pydantic import UUID4
 
 
-class PaymentObjectSchema(BaseModel):
+class PaymentObjectSchema(ORJSONModel):
     id: UUID4
     status: str
     paid: bool
 
 
-class PaymentNotificationSchema(BaseModel):
+class PaymentNotificationSchema(ORJSONModel):
     type: str
     event: str
     object: PaymentObjectSchema

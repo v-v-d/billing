@@ -2,8 +2,9 @@ import secrets
 
 from fastapi.security import HTTPBasicCredentials
 from jose import JWTError, jwt
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
+from app.api.schemas import ORJSONModel
 from app.settings import settings
 
 
@@ -15,7 +16,7 @@ class NotAuthenticatedError(BaseSecurityError):
     pass
 
 
-class TokenData(BaseModel):
+class TokenData(ORJSONModel):
     user_id: str
     login: str
     email: str

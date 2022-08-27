@@ -1,6 +1,5 @@
 aiohttp==3.8.1
 alembic==1.8.1
-arq==0.22
 asyncpg==0.26.0
 backoff==2.1.2
 elastic-apm==6.10.1

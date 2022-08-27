@@ -7,8 +7,8 @@ from fastapi_pagination import add_pagination
 
 from app.api import init_api
 from app.apm import init_apm
-from app.integrations.async_api import async_api_client
-from app.integrations.yookassa import yookassa_client
+from app.integrations.async_api.client import async_api_client
+from app.integrations.yookassa.client import yookassa_client
 from app.sentry import init_sentry
 from app.settings import settings
 from app.settings.logging import LOGGING

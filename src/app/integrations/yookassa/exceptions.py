@@ -1,0 +1,2 @@
+class YookassaHttpClientError(Exception):
+    pass

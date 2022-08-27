@@ -2,12 +2,12 @@ import logging
 from contextvars import ContextVar
 from typing import Optional
 
-from pydantic import BaseModel
+from app.api.schemas import ORJSONModel
 
 logger = logging.getLogger(__name__)
 
 
-class ContextSchema(BaseModel):
+class ContextSchema(ORJSONModel):
     x_request_id: Optional[str]
 
 

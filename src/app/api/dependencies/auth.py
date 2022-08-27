@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 
+from app.api.errors import NOT_AUTHENTICATED, NOT_ALLOWED, INCORRECT_CREDENTIALS
 from app.security import (
     TokenData,
     decode_jwt_token,
@@ -18,7 +19,7 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)) ->
     except NotAuthenticatedError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect credentials",
+            detail=INCORRECT_CREDENTIALS,
             headers={"WWW-Authenticate": "Basic"},
         )
 
@@ -29,7 +30,7 @@ async def decode_jwt(token: str = Depends(oauth2_scheme)) -> TokenData:
     except NotAuthenticatedError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
+            detail=NOT_AUTHENTICATED,
         )
 
 
@@ -37,5 +38,5 @@ async def check_admin_role(token_data: TokenData = Depends(decode_jwt)) -> None:
     if "admin" not in token_data.roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not allowed",
+            detail=NOT_ALLOWED,
         )

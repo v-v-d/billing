@@ -4,51 +4,22 @@ from logging import getLogger
 from pydantic import UUID4
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.integrations.async_api import async_api_client, AsyncAPIHttpClientError
-from app.integrations.yookassa import (
-    yookassa_client,
-    YookassaHttpClientError,
-    StatusEnum,
-)
+from app.integrations.async_api.client import async_api_client, AsyncAPIHttpClientError
+from app.integrations.yookassa.client import yookassa_client, YookassaHttpClientError
+from app.integrations.yookassa.schemas import StatusEnum
 from app.models import Transaction, Receipt, ReceiptItem, UserFilm
+from app.services.payments.exceptions import (
+    AlreadyPurchasedError,
+    AsyncAPIUnavailableError,
+    YookassaUnavailableError,
+    YookassaRefundError,
+    PermissionDeniedError,
+    IncorrectTransactionStatusError,
+    NotAvalableForRefundError,
+    AlreadyWatchedError,
+)
 
 logger = getLogger(__name__)
-
-
-class BasePaymentsServiceError(Exception):
-    pass
-
-
-class AlreadyPurchasedError(BasePaymentsServiceError):
-    pass
-
-
-class AsyncAPIUnavailableError(BasePaymentsServiceError):
-    pass
-
-
-class YookassaUnavailableError(BasePaymentsServiceError):
-    pass
-
-
-class PermissionDeniedError(BasePaymentsServiceError):
-    pass
-
-
-class NotAvalableForRefundError(BasePaymentsServiceError):
-    pass
-
-
-class IncorrectTransactionStatusError(BasePaymentsServiceError):
-    pass
-
-
-class AlreadyWatchedError(BasePaymentsServiceError):
-    pass
-
-
-class YookassaRefundError(BasePaymentsServiceError):
-    pass
 
 
 class PaymentsService:

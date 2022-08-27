@@ -5,12 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from app.api.dependencies.database import get_db
+from app.api.errors import YOOKASSA_SERVICE_ERROR
 from app.api.public.v1.schemas import PaymentNotificationSchema
-from app.integrations.yookassa import (
-    yookassa_client,
-    YookassaHttpClientError,
-    StatusEnum,
-)
+from app.integrations.yookassa.client import yookassa_client
+from app.integrations.yookassa.exceptions import YookassaHttpClientError
+from app.integrations.yookassa.schemas import StatusEnum
 from app.models import Transaction, ObjectDoesNotExistError
 
 router = APIRouter()
@@ -26,7 +25,7 @@ async def on_after_payment(
     except YookassaHttpClientError:
         raise HTTPException(
             status_code=status.HTTP_424_FAILED_DEPENDENCY,
-            detail="Yookassa unavailable.",
+            detail=YOOKASSA_SERVICE_ERROR,
         )
 
     try:

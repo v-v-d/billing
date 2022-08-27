@@ -1,18 +1,11 @@
 from furl import furl
-from pydantic import AnyHttpUrl, ValidationError, BaseModel
+from pydantic import AnyHttpUrl, ValidationError
 
+from app.integrations.async_api.exceptions import AsyncAPIHttpClientError
+from app.integrations.async_api.schemas import FilmSchema
 from app.integrations.base import AbstractHttpClient
 from app.settings import settings
 from app.transports import AbstractHttpTransport, AiohttpTransport
-
-
-class AsyncAPIHttpClientError(Exception):
-    pass
-
-
-class FilmSchema(BaseModel):
-    title: str
-    price: int
 
 
 class AsyncAPIHttpClient(AbstractHttpClient):
