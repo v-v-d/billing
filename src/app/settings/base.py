@@ -152,32 +152,12 @@ class YookassaIntegrationSettings(BaseSettings):
     TIMEOUT_SEC: int = 10
     AUTH_USER: str
     AUTH_PASSWORD: str
-    RETURN_URL_PATTERN: str = "https://billing:5000/api/v1/transactions/{}"
+    SECRET_KEY: str
+    SIGNATURE_EXPIRATION_HOURS: int = 1
+    RETURN_URL_PATTERN: str
 
     class Config:
         env_prefix = "YOOKASSA_INTEGRATION_"
-
-
-class BackgroundTasksSettings(BaseSettings):
-    class SubscriptionTaskSettings(BaseSettings):
-        DEFER_SEC: int = 60 * 1
-        MAX_TRIES: int = (3 * 60 * 60) / DEFER_SEC  # 3 hours
-
-        class Config:
-            env_prefix = "BACKGROUND_SUBSCRIPTION_"
-
-    class ReceiptTaskSettings(BaseSettings):
-        DEFER_SEC: int = 60 * 15
-        MAX_TRIES: int = (3 * 24 * 60 * 60) / DEFER_SEC  # 3 days
-
-        class Config:
-            env_prefix = "BACKGROUND_RECEIPT_"
-
-    SUBSCRIPTION: SubscriptionTaskSettings = SubscriptionTaskSettings()
-    RECEIPT: ReceiptTaskSettings = ReceiptTaskSettings()
-
-    class Config:
-        env_prefix = "BACKGROUND_"
 
 
 class CommonSettings(BaseSettings):
@@ -196,4 +176,3 @@ class CommonSettings(BaseSettings):
     LOGS: LoggingSettings = LoggingSettings()
     ASYNC_API_INTEGRATION: AsyncAPIIntegrationSettings = AsyncAPIIntegrationSettings()
     YOOKASSA_INTEGRATION: YookassaIntegrationSettings = YookassaIntegrationSettings()
-    BACKGROUND: BackgroundTasksSettings = BackgroundTasksSettings()

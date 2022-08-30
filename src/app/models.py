@@ -60,11 +60,12 @@ class MethodsExtensionMixin:
         return obj
 
     @classmethod
-    async def create(cls, session: AsyncSession, **kwargs):
+    async def create(cls, session: AsyncSession, flush: bool = False, **kwargs):
         obj = cls(**kwargs)
         session.add(obj)
-        await session.commit()
-        await session.refresh(obj)
+
+        if flush:
+            await session.flush([obj])
 
         return obj
 

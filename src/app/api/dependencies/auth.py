@@ -1,3 +1,9 @@
+import base64
+import hashlib
+import hmac
+from datetime import datetime, timedelta
+from urllib.parse import unquote
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 
@@ -11,6 +17,37 @@ from app.security import (
 
 security = HTTPBasic()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+class SignatureValidator:
+    def __init__(self, secret_key: str, signature_expiration_hours: int):
+        self.secret_key = secret_key
+        self.signature_expiration_hours = signature_expiration_hours
+
+    def __call__(self, signature: str, date: str) -> None:
+        unquoted_signature = unquote(signature)
+        unquoted_date = unquote(date)
+
+        parsed_date = datetime.fromisoformat(unquoted_date)
+
+        if parsed_date < datetime.utcnow() - timedelta(
+            hours=self.signature_expiration_hours
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=NOT_AUTHENTICATED
+            )
+
+        to_hash = bytes(unquoted_date, "utf-8")
+        secret = bytes(self.secret_key, "utf-8")
+
+        valid_signature = base64.b64encode(
+            hmac.new(secret, to_hash, digestmod=hashlib.sha256).digest()
+        ).decode()
+
+        if unquoted_signature != valid_signature:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=NOT_AUTHENTICATED
+            )
 
 
 def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)) -> None:

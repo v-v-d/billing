@@ -55,11 +55,9 @@ class PaymentsService:
             type=Transaction.TypeEnum.PAYMENT,
             payment_type=payment_type,
         )
-        # prevent sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
-        transaction_id = transaction.id
 
         receipt = await Receipt.create(db_session, transaction_id=transaction.id)
-        await ReceiptItem.create(
+        receipt_item = await ReceiptItem.create(
             db_session,
             receipt_id=receipt.id,
             description=film.title,
@@ -68,13 +66,17 @@ class PaymentsService:
             type=ReceiptItem.TypeEnum.FILM,
         )
 
+        await db_session.flush()
+        receipt.transaction_id = transaction.id
+        receipt_item.receipt_id = receipt.id
+
         valid_price = (Decimal(film.price) / 100).quantize(
             Decimal(".01"), rounding=ROUND_HALF_UP
         )
 
         try:
             yookassa_data = await yookassa_client.pay(
-                valid_price, transaction_id, idempotence_key
+                valid_price, transaction.id, idempotence_key
             )
         except YookassaHttpClientError:
             raise YookassaUnavailableError
@@ -121,6 +123,13 @@ class PaymentsService:
         refund_receipt.items = refund_receipt_items
         refund_transaction.receipt = refund_receipt
         refund_transaction.user_film = payment_transaction.user_film
+
+        await db_session.flush()
+
+        refund_receipt.transaction_id = refund_transaction.id
+
+        for refund_receipt_item in refund_receipt_items:
+            refund_receipt_item.receipt_id = refund_receipt.id
 
         valid_amount = (Decimal(refund_transaction.amount) / 100).quantize(
             Decimal(".01"), rounding=ROUND_HALF_UP

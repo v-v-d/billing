@@ -1,12 +1,11 @@
 from decimal import Decimal
 from typing import Any
 
-import aiohttp
 from furl import furl
 from pydantic import AnyHttpUrl, UUID4, ValidationError
 
 from app.api.public.v1.schemas import PaymentObjectSchema
-from app.integrations.base import AbstractHttpClient
+from app.integrations.base import AbstractHttpClient, SignatureMixin
 from app.integrations.yookassa.exceptions import YookassaHttpClientError
 from app.integrations.yookassa.schemas import (
     YookassaPaymentResponseSchema,
@@ -16,21 +15,20 @@ from app.settings import settings
 from app.transports import AbstractHttpTransport, AiohttpTransport
 
 
-class YookassaHttpClient(AbstractHttpClient):
+class YookassaHttpClient(AbstractHttpClient, SignatureMixin):
     base_url: AnyHttpUrl = settings.YOOKASSA_INTEGRATION.BASE_URL
     client_exc: Exception = YookassaHttpClientError
-    auth: aiohttp.BasicAuth = (
-        aiohttp.BasicAuth(
-            settings.YOOKASSA_INTEGRATION.AUTH_USER,
-            settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD,
-        ),
-    )
+    secret_key = settings.YOOKASSA_INTEGRATION.SECRET_KEY
 
     def __init__(self, http_transport: AbstractHttpTransport) -> None:
         self.http_transport: AbstractHttpTransport = http_transport
+        self.http_transport.auth = (
+            settings.YOOKASSA_INTEGRATION.AUTH_USER,
+            settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD,
+        )
 
     async def _request(self, *args, **kwargs) -> Any:
-        return await self.request(*args, **kwargs, auth=self.auth)
+        return await self.request(*args, **kwargs)
 
     async def pay(
         self,
@@ -38,10 +36,13 @@ class YookassaHttpClient(AbstractHttpClient):
         transaction_id: UUID4,
         idempotence_key: UUID4,
     ) -> YookassaPaymentResponseSchema:
+        signature, date = self.make_signature()
+
         return_url = settings.YOOKASSA_INTEGRATION.RETURN_URL_PATTERN.format(
-            transaction_id
+            transaction_id, signature, date
         )
         data = {
+            "capture": True,
             "amount": {
                 "value": str(price),
                 "currency": "RUB",
@@ -51,7 +52,7 @@ class YookassaHttpClient(AbstractHttpClient):
                 "return_url": return_url,
             },
         }
-        headers = {"Idempotence-Key": idempotence_key}
+        headers = {"Idempotence-Key": str(idempotence_key)}
         url = furl(self.base_url).add(path="/v3/payments")
 
         response = await self._request(
@@ -89,7 +90,7 @@ class YookassaHttpClient(AbstractHttpClient):
             },
             "payment_id": payment_transaction_ext_id,
         }
-        headers = {"Idempotence-Key": idempotence_key}
+        headers = {"Idempotence-Key": str(idempotence_key)}
         url = furl(self.base_url).add(path="/v3/refunds")
 
         response = await self._request(

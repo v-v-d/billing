@@ -1,11 +1,9 @@
 import http
 from typing import Any
 from unittest.mock import ANY, MagicMock
-from uuid import UUID
 
 import pytest
 import sqlalchemy as sa
-from aiohttp import BasicAuth
 from async_asgi_testclient import TestClient
 from jose import jwt
 from pytest_mock import MockerFixture
@@ -278,14 +276,7 @@ async def test_ok(
             },
             "payment_id": ANY,
         },
-        headers={"Idempotence-Key": UUID(headers["Idempotence-Key"])},
-        auth=(
-            BasicAuth(
-                login=settings.YOOKASSA_INTEGRATION.AUTH_USER,
-                password=settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD,
-                encoding="latin1",
-            ),
-        ),
+        headers={"Idempotence-Key": headers["Idempotence-Key"]},
     )
 
     stmt = sa.select(UserFilm).where(

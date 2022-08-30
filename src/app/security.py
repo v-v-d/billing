@@ -1,4 +1,5 @@
 import secrets
+from typing import Optional
 
 from fastapi.security import HTTPBasicCredentials
 from jose import JWTError, jwt
@@ -19,7 +20,7 @@ class NotAuthenticatedError(BaseSecurityError):
 class TokenData(ORJSONModel):
     user_id: str
     login: str
-    email: str
+    email: Optional[str]
     roles: list[str]
 
 

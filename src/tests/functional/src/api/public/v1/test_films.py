@@ -1,11 +1,9 @@
 import http
 from typing import Any
 from unittest.mock import ANY, MagicMock
-from uuid import UUID
 
 import pytest
 import sqlalchemy as sa
-from aiohttp import BasicAuth
 from async_asgi_testclient import TestClient
 from pytest_mock import MockerFixture
 
@@ -162,20 +160,14 @@ async def test_ok(
         method="POST",
         url=f"{settings.YOOKASSA_INTEGRATION.BASE_URL}/v3/payments",
         json={
+            "capture": True,
             "amount": {"value": "300.00", "currency": "RUB"},
             "confirmation": {
                 "type": "redirect",
                 "return_url": ANY,
             },
         },
-        headers={"Idempotence-Key": UUID(headers["Idempotence-Key"])},
-        auth=(
-            BasicAuth(
-                login=settings.YOOKASSA_INTEGRATION.AUTH_USER,
-                password=settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD,
-                encoding="latin1",
-            ),
-        ),
+        headers={"Idempotence-Key": headers["Idempotence-Key"]},
     )
 
     stmt = sa.select(UserFilm).where(
@@ -290,18 +282,12 @@ async def test_failed_yookassa(
         method="POST",
         url=f"{settings.YOOKASSA_INTEGRATION.BASE_URL}/v3/payments",
         json={
+            "capture": True,
             "amount": {"value": "300.00", "currency": "RUB"},
             "confirmation": {
                 "type": "redirect",
                 "return_url": ANY,
             },
         },
-        headers={"Idempotence-Key": UUID(headers["Idempotence-Key"])},
-        auth=(
-            BasicAuth(
-                login=settings.YOOKASSA_INTEGRATION.AUTH_USER,
-                password=settings.YOOKASSA_INTEGRATION.AUTH_PASSWORD,
-                encoding="latin1",
-            ),
-        ),
+        headers={"Idempotence-Key": headers["Idempotence-Key"]},
     )

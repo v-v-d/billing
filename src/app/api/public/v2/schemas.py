@@ -1,29 +1,9 @@
 from typing import Optional
-from uuid import UUID
+
+from pydantic import UUID4
 
 from app.api.schemas import ORJSONModel
 from app.models import Transaction, Receipt, ReceiptItem
-from pydantic import UUID4
-
-
-class PaymentObjectSchema(ORJSONModel):
-    id: UUID
-    status: str
-    paid: bool
-
-
-class PaymentNotificationSchema(ORJSONModel):
-    type: str
-    event: str
-    object: PaymentObjectSchema
-
-
-class PurchaseRequestSchema(ORJSONModel):
-    payment_type: Transaction.PaymentType
-
-
-class PurchaseResponseSchema(ORJSONModel):
-    confirmation_url: Optional[str] = None
 
 
 class UserFilmSchema(ORJSONModel):

@@ -50,6 +50,11 @@ LOGGING = {
         },
     },
     "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": settings.LOGS.DEFAULT_LEVEL,
+            "propagate": False,
+        },
         "uvicorn.access": {
             "handlers": ["console", "uvicorn.access"],
             "level": "INFO",
@@ -81,7 +86,7 @@ LOGGING = {
             "propagate": False,
         },
     },
-    "root": {"level": "DEBUG", "handlers": ["console"]},
+    "root": {"level": "DEBUG", "formatter": "default", "handlers": ["console"]},
 }
 
 if settings.LOGS.JSON_ENABLED:
